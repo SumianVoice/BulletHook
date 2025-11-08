@@ -445,7 +445,7 @@ core.register_on_mods_loaded(function()
 						aom_tcraft.register_craft({
 							output = recipe.output,
 							items = ingreds,
-							method = recipe._aom_tcraft_method,
+							method = recipe._tcraft_method,
 							builtin = true,
 						})
 					end
