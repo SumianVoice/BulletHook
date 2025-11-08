@@ -1,0 +1,6 @@
+
+#    desc of setting
+#some_setting_name (Some Setting Name) int 4
+
+#    desc of setting
+#some_setting_name (Some Setting Name) bool false
