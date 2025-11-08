@@ -1,0 +1,138 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2025-08-26 19:15+1000\n"
+"PO-Revision-Date: 2025-08-22 22:12+1000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.6\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: ;S;PS\n"
+"X-Poedit-Flags-xgettext: --add-comments=TL:\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: .*\n"
+
+#: nodes/air_lights.lua:12
+msgid "Transient Light Node"
+msgstr ""
+
+#: nodes/various.lua:7
+msgid "Barrier"
+msgstr ""
+
+#: nodes/various.lua:36
+msgid "Air equivalent for schematics"
+msgstr ""
+
+#: scripts/find_biome.lua:34
+msgid "Looks for a biome"
+msgstr ""
+
+#: scripts/find_biome.lua:40 scripts/find_biome.lua:54
+msgid "Biome not valid, or none found."
+msgstr ""
+
+#. TL: @1 name of biome ("oak_forest_dense")
+#: scripts/find_biome.lua:42
+msgid "Found biome at @1"
+msgstr ""
+
+#: scripts/find_biome.lua:48
+msgid "Looks for a biome and teleports you there"
+msgstr ""
+
+#: scripts/item_display.lua:16
+msgid "Shows an item as an inventory item"
+msgstr ""
+
+#. TL: setting description
+#: scripts/itemdrop.lua:16
+msgid "Force nodes to drop items in world"
+msgstr ""
+
+#. TL: setting description
+#: scripts/itemdrop.lua:21
+msgid "No drops when using wrong tool"
+msgstr ""
+
+#. TL: setting description
+#: scripts/itemdrop.lua:26
+msgid "Prefer nodes drop items in world"
+msgstr ""
+
+#. TL: @1 is the description of a node ("Stone Bricks")
+#: scripts/make_shapes.lua:59
+msgid "@1 Slab"
+msgstr ""
+
+#. TL: @1 is the description of a node ("Stone Bricks")
+#: scripts/make_shapes.lua:141
+msgid "@1 Stair"
+msgstr ""
+
+#. TL: @1 is the description of a node ("Stone Bricks"), long beam type node
+#: scripts/make_shapes.lua:210
+msgid "@1 Beam"
+msgstr ""
+
+#. TL: @1 is the description of a node ("Stone Bricks")
+#: scripts/make_shapes.lua:276
+msgid "@1 Post"
+msgstr ""
+
+#. TL: @1 is the description of a node ("Stone Bricks"), quarter / post-like node
+#: scripts/make_shapes.lua:333
+msgid "@1 Quarter"
+msgstr ""
+
+#. TL: @1 is a filepath ("minetest/worlds/worldname/item_list.txt")
+#: scripts/output_node_list.lua:50
+msgid "Finished compiling a list of all items. Output to @1"
+msgstr ""
+
+#: scripts/output_node_list.lua:55
+msgid "Outputs list of all items"
+msgstr ""
+
+#: scripts/server_info.lua:10
+msgid "Tells you the avg step time"
+msgstr ""
+
+#. TL: @1 is time in seconds ("0.021452")
+#: scripts/server_info.lua:15
+msgid "Server step avg: @1s"
+msgstr ""
+
+#: scripts/time.lua:37
+msgid "Forcibly sets the time and keeps it there. Uses sine scale, 0 midnight, 0.5 noon, 1 midnight."
+msgstr ""
+
+#: scripts/time.lua:43
+msgid "Setting time to day (0.25)"
+msgstr ""
+
+#: scripts/time.lua:46
+msgid "Setting time to night (0.8)"
+msgstr ""
+
+#: scripts/time.lua:52
+msgid "Forcing time to stay at "
+msgstr ""
+
+#: scripts/time.lua:55
+msgid "Releasing forced time."
+msgstr ""
+
+#. TL: @1 number 0-1 ("0.445")
+#: scripts/time.lua:63
+msgid "Setting time to @1"
+msgstr ""
+
+#: scripts/time.lua:65
+msgid "Error, you must supply a number."
+msgstr ""
