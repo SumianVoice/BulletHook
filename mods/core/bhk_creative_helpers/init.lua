@@ -12,6 +12,7 @@ core.register_on_joinplayer(function(player, last_login)
 	bhk_main.safe_set_inventory_list_size(player, "craftpreview", 0)
 	bhk_main.safe_set_inventory_list_size(player, "craftresult", 0)
 	if bhk_main.dev_mode then
+		player:hud_set_hotbar_itemcount(16)
 		bhk_main.safe_set_inventory_list_size(player, "trash", 2)
 	else
 		bhk_main.safe_set_inventory_list_size(player, "trash", 0)

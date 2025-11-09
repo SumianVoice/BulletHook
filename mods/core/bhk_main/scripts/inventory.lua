@@ -40,7 +40,7 @@ end
 
 function bhk_main.update_player_formspec(player)
     local inv = table.copy(bhk_main.inventory)
-    if not minetest.is_creative_enabled(player:get_player_name()) then
+    if not core.is_creative_enabled(player:get_player_name()) then
         inv.width = 6
         inv.height = 1
         inv.size = inv.width * inv.height
@@ -62,7 +62,7 @@ function bhk_main.update_player_formspec(player)
     })
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
     -- bhk_main.update_player_formspec(player)
 end)
 

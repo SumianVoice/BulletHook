@@ -47,7 +47,7 @@ core.register_alias("mapgen_stone", "air")
 core.register_alias("mapgen_water_source", "air")
 core.register_alias("mapgen_river_water_source", "air")
 
-minetest.register_node("bhk_main:light_blocker", {
+core.register_node("bhk_main:light_blocker", {
     description = "blocks light",
     pointable = bhk_main.dev_mode or false,
     groups = { dig_immediate = 3 },

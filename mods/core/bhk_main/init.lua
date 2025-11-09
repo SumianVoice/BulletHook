@@ -9,19 +9,26 @@ bhk_main = {
     dev_mode = false,
     nodes_pointable = true,
 	generators = {},
+	flags = {
+		doors_block_light = false,
+	},
 }
 
 bhk_main.mg_name = core.get_mapgen_setting("mg_name") or "singlenode"
 bhk_main.dev_mode = (bhk_main.mg_name == "flat") or core.is_creative_enabled()
 
+dofile(mod_path .. "/scripts" .. "/OptionList.lua")
 dofile(mod_path .. "/scripts" .. "/creative.lua")
 dofile(mod_path .. "/scripts" .. "/inventory.lua")
 dofile(mod_path .. "/scripts" .. "/on_generate.lua")
+
 dofile(mod_path .. "/nodes" .. "/nodes_system.lua")
 dofile(mod_path .. "/nodes" .. "/main_nodes.lua")
 dofile(mod_path .. "/nodes" .. "/decoration.lua")
 dofile(mod_path .. "/nodes" .. "/furniture.lua")
 dofile(mod_path .. "/nodes" .. "/lights.lua")
+dofile(mod_path .. "/nodes" .. "/doors.lua")
+
 dofile(mod_path .. "/mapgen" .. "/mg_main.lua")
 
 local _t = 0
@@ -34,7 +41,11 @@ core.register_globalstep(function(dtime)
 	end
 end)
 
-if bhk_main.dev_mode then
+core.register_globalstep(function(dtime)
+    core.set_timeofday(0.49)
+end)
+
+if bhk_main.mg_name == "flat" then
 	core.register_ore({
 		ore_type       = "stratum",
 		ore            = "bhk_main:placeholder",
@@ -45,10 +56,22 @@ if bhk_main.dev_mode then
 	core.set_mapgen_setting("mg_flags", "nocaves,nodungeons,light,decorations,nobiomes,ores", true)
 else
 	core.register_on_generated(bhk_main.generators.main)
-	core.set_mapgen_setting("mg_flags", "nocaves,nodungeons,light,decorations,biomes,ores", true)
+	core.register_ore({
+		ore_type       = "stratum",
+		ore            = "bhk_main:black",
+		wherein        = {"air", "group:liquid"},
+		y_min = 47,
+		y_max = 47,
+	})
+	core.set_mapgen_setting("mg_flags", "nocaves,nodungeons,light,decorations,nobiomes,ores", true)
 end
 
 core.register_on_joinplayer(function(player, last_login)
+	player:set_sky({
+		base_color = "#222",
+		type = "plain",
+		clouds = false,
+	})
 	if not bhk_main.dev_mode then
 		-- player:set_fov(60, false, 0)
 		-- player:set_camera({
