@@ -4,12 +4,12 @@ bhk_main.state = MFSM.new({
         {
             name = "freeplay",
 			on_step = function(self, dtime, meta)
-				meta._t = (meta._t or 0) - dtime
-				local nt = 0.1
-				if meta._t > 0 then return else meta._t = meta._t + nt end
+				-- meta._t = (meta._t or 0) - dtime
+				-- local nt = 0.1
+				-- if meta._t > 0 then return else meta._t = meta._t + nt end
 				for i, player in ipairs(core.get_connected_players()) do
 					local pi = assert(bhk_main.pi(player))
-					bhk_main.do_tasks(player, pi)
+					bhk_main.do_tasks(player, dtime, pi)
 				end
 			end,
             on_start = function(self, meta)

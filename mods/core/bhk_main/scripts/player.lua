@@ -4,6 +4,13 @@ local S = core.get_translator(mod_name)
 
 bhk_main.task_max_count = 50
 
+function bhk_main.get_end_of_queue(player, pi)
+	local task = pi.tasks[#pi.tasks]
+	if task then
+	end
+end
+
+
 function bhk_main.queue_task_move(player, pos, pi)
 	pi = pi or bhk_main.pi(player)
 	if #pi.tasks >= bhk_main.task_max_count then return end
@@ -19,26 +26,30 @@ function bhk_main.queue_task_move(player, pos, pi)
 		ent:_set_target(pos)
 		ent._parent = player
 	end
-	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj})
 
-	pi.last_move_pos = pos
+	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj, start_pos = start_pos, time = 0, time_total = dist})
+
+	pi.last_move_pos = vector.copy(pos)
 end
 
 function bhk_main.queue_task_look(player, pos, pi)
 	pi = pi or bhk_main.pi(player)
 	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
-	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
+	local start_pos = pi.last_look_pos or fplayer.object:get_pos()
+	local place_pos = pi.last_move_pos or fplayer.object:get_pos()
 
-	table.insert(pi.tasks, {type = "look", pos = pos})
+	table.insert(pi.tasks, {type = "look", pos = pos, start_pos = start_pos, time = 0, time_total = 1})
 
-	local obj = core.add_entity(start_pos, "bhk_main:gui_task_look")
+	local obj = core.add_entity(place_pos, "bhk_main:gui_task_look")
 	local ent = obj and obj:get_luaentity()
 	if ent then
 		ent:_set_target(pos)
 		ent._parent = player
 	end
 	pi.tasks[#pi.tasks].obj = obj
+
+	pi.last_look_pos = vector.copy(pos)
 end
 
 function bhk_main.queue_task_wait(player, time, pi)
@@ -65,6 +76,20 @@ core.register_tool("bhk_main:move_tool", {
 		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
 		bhk_main.queue_task_look(user, pointed_thing.intersection_point, pi)
+    end,
+	range = 100,
+})
+
+core.register_tool("bhk_main:move_undo", {
+    description = S("Undo"),
+    inventory_image = "[fill:2x2:#f00^[fill:1x1:1,0:#fff",
+    wield_image = "blank.png",
+    groups = {},
+    -- on_secondary_use = function(itemstack, user, pointed_thing) end,
+    on_place = function(itemstack, user, pointed_thing)
+		local pi = bhk_main.pi(user)
+		if not pi then return end
+		bhk_main.task_remove(user, pi, #pi.tasks)
     end,
 	range = 100,
 })
@@ -106,28 +131,58 @@ function bhk_main.task_remove(player, pi, i)
 	end
 end
 
+function bhk_main.task_update(player, pi, i)
+	pi = pi or bhk_main.pi(player)
+	local task = table.remove(pi.tasks, i)
+	if not task.obj then return end
+	if task.type == "move" then
+	elseif task.type == "look" then
+	end
+end
 
 
-function bhk_main.do_tasks(player, pi)
+
+function bhk_main.do_tasks(player, dtime, pi)
+	-- do return end
 	pi = pi or bhk_main.pi(player)
 	local task = pi.tasks[1]
 	if not task then return false end
+	task.time = math.min(task.time_total, math.max(0, task.time + dtime))
+	local f = task.time / task.time_total
 
 	local fpos = pi.fplayer.object:get_pos()
 	local bpos = pi.fow_blocker.object:get_pos()
+
 	if task.type == "move" then
-		local pos = vector.copy(task.pos)
+		pi.move_target = task.pos
+		local pos = (task.pos * f) + (task.start_pos * (1-f))
 		pos.y = fpos.y
-		pi.fplayer.object:move_to(pos)
+		pi.fplayer.object:move_to(pos, true)
 		pos.y = bpos.y
-		pi.fow_blocker.object:move_to(pos)
+		pi.fow_blocker.object:move_to(pos, true)
+
+		if task.obj then
+			local yaw = core.dir_to_yaw(vector.direction(fpos, pi.move_target))
+			task.obj:set_bone_override("line_start", {
+				position = {
+					vec = (fpos - task.obj:get_pos()),
+					interpolation = 0.2,
+					absolute = true,
+				},
+				rotation = {
+					vec = vector.new(0, -yaw, 0),
+					absolute = true,
+				},
+			})
+		end
 	elseif task.type == "look" then
-		pi.fplayer.object:set_yaw(task.yaw)
-		-- pi.fow_blocker._look_pos = task.pos
-		pi.fow_blocker._look_yaw = task.yaw
+		local pos = (task.pos * f) + (task.start_pos * (1-f))
+		pi.look_target = pos
 	end
 
-	bhk_main.task_remove(player, pi, 1)
+	if task.time >= task.time_total then
+		bhk_main.task_remove(player, pi, 1)
+	end
 end
 
 
@@ -152,7 +207,7 @@ core.register_entity("bhk_main:gui_task_move", {
 			rotation = {
 				vec = vector.new(0, -yaw, 0),
 				absolute = true,
-			}
+			},
 		})
 		self.object:set_bone_override("line_end", {
 			position = {
@@ -163,13 +218,13 @@ core.register_entity("bhk_main:gui_task_move", {
 			rotation = {
 				vec = vector.new(0, -yaw, 0),
 				absolute = true,
-			}
+			},
 		})
 		self.object:set_bone_override("root", {
 			scale = {
 				vec = vector.new(10, 10, 10),
 				interpolation = 1,
-			}
+			},
 		})
 	end,
     on_step = function(self, dtime, moveresult)
@@ -200,7 +255,7 @@ core.register_entity("bhk_main:gui_task_look", {
 			rotation = {
 				vec = vector.new(0, -yaw, 0),
 				absolute = true,
-			}
+			},
 		})
 		self.object:set_bone_override("line_end", {
 			position = {
@@ -211,13 +266,13 @@ core.register_entity("bhk_main:gui_task_look", {
 			rotation = {
 				vec = vector.new(0, -yaw, 0),
 				absolute = true,
-			}
+			},
 		})
 		self.object:set_bone_override("root", {
 			scale = {
 				vec = vector.new(10, 10, 10),
 				interpolation = 1,
-			}
+			},
 		})
 	end,
     on_step = function(self, dtime, moveresult)
@@ -247,6 +302,15 @@ core.register_entity("bhk_main:fplayer", {
     on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
+		end
+
+		local pi = assert(bhk_main.pi(self._parent))
+		if pi.look_target and not self._target then
+			local fpos = self.object:get_pos()
+			local tyaw = core.dir_to_yaw(vector.direction(fpos, pi.look_target))
+			local yaw = bhk_main.angle_lerp(self.object:get_yaw(), tyaw, 0.2)
+			pi.fplayer.object:set_yaw(yaw)
+			pi.fow_blocker._look_yaw = yaw
 		end
     end,
 })
