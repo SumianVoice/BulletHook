@@ -21,7 +21,7 @@ function bhk_main.queue_task_move(player, pos, pi)
 		cur_dist = cur_dist + take
 		local target_pos = start_pos + (dir * cur_dist)
 
-		local obj = core.add_entity(vector.offset(last_pos, 0, 0.1, 0), "bhk_main:gui_task_move")
+		local obj = core.add_entity(last_pos, "bhk_main:gui_task_move")
 		local ent = obj and obj:get_luaentity()
 		if ent then
 			ent:_set_target(target_pos)
@@ -35,27 +35,29 @@ function bhk_main.queue_task_move(player, pos, pi)
 end
 
 function bhk_main.queue_task_look(player, pos, pi)
-	core.log("LOOK")
 	pi = pi or bhk_main.pi(player)
-	if #pi.tasks >= bhk_main.task_max_count then
-		core.log("OUT OF MOVES")
-		return end
+	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
 	local start_yaw = pi.last_look_yaw or 0
-	local yaw = core.dir_to_yaw(vector.direction(pi.last_move_pos or fplayer.object:get_pos(), pos))
+	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
+	local yaw = core.dir_to_yaw(vector.direction(start_pos, pos))
 	local dist = (bhk_main.angle_difference(start_yaw, yaw))
-	if math.abs(dist) < 0.001 then
-		core.log("TOO CLOSE")
-		core.log(dump(dist))
-		return end
+	if math.abs(dist) < 0.001 then return end
 	local segment_count = math.abs(math.ceil(dist / 0.2)) + 1
 	for i = 1, segment_count do
 		local to_yaw = start_yaw + dist * math.min(1, i/segment_count)
-		local gui = nil
-		table.insert(pi.tasks, {type = "look", yaw = to_yaw, gui = gui})
+		table.insert(pi.tasks, {type = "look", yaw = to_yaw})
 	end
+
+	local obj = core.add_entity(start_pos, "bhk_main:gui_task_look")
+	local ent = obj and obj:get_luaentity()
+	if ent then
+		ent:_set_target(pos)
+		ent._parent = player
+	end
+	pi.tasks[#pi.tasks].obj = obj
+
 	pi.last_look_yaw = yaw
-	core.log("LOOK END")
 end
 
 function bhk_main.queue_task_wait(player, time, pi)
@@ -151,7 +153,7 @@ end
 core.register_entity("bhk_main:gui_task_move", {
     initial_properties = {
         textures = {
-			"[fill:2x2:#05f",
+			"[fill:2x2:#19f^[fill:2x2:#4af",
 		},
         visual = "mesh",
 		mesh = "bhk_task_move.glb",
@@ -159,6 +161,55 @@ core.register_entity("bhk_main:gui_task_move", {
         pointable = false,
         physical = false,
         static_save = false,
+		glow = 14,
+    },
+	_set_target = function(self, tpos)
+		local pos = self.object:get_pos()
+		local yaw = core.dir_to_yaw(vector.direction(pos, tpos))
+		local opos = (tpos - pos)
+		self.object:set_bone_override("line_start", {
+			rotation = {
+				vec = vector.new(0, -yaw, 0),
+				absolute = true,
+			}
+		})
+		self.object:set_bone_override("line_end", {
+			position = {
+				vec = opos,
+				interpolation = 1,
+				absolute = true,
+			},
+			rotation = {
+				vec = vector.new(0, -yaw, 0),
+				absolute = true,
+			}
+		})
+		self.object:set_bone_override("root", {
+			scale = {
+				vec = vector.new(10, 10, 10),
+				interpolation = 1,
+			}
+		})
+	end,
+    on_step = function(self, dtime, moveresult)
+		if not core.is_player(self._parent) then
+			return self.object:remove()
+		end
+    end,
+})
+
+core.register_entity("bhk_main:gui_task_look", {
+    initial_properties = {
+        textures = {
+			"[fill:2x2:#fb0",
+		},
+        visual = "mesh",
+		mesh = "bhk_task_look.glb",
+        use_texture_alpha = true,
+        pointable = false,
+        physical = false,
+        static_save = false,
+		glow = 14,
     },
 	_set_target = function(self, tpos)
 		local pos = self.object:get_pos()
