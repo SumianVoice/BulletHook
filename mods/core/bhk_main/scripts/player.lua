@@ -2,7 +2,7 @@ local mod_name = core.get_current_modname()
 local mod_path = core.get_modpath(mod_name)
 local S = core.get_translator(mod_name)
 
-bhk_main.task_max_count = 20
+bhk_main.task_max_count = 50
 
 function bhk_main.queue_task_move(player, pos, pi)
 	pi = pi or bhk_main.pi(player)
@@ -12,14 +12,24 @@ function bhk_main.queue_task_move(player, pos, pi)
 	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
 	local dist = vector.distance(start_pos, pos)
 	if dist < 0.1 then return end
-	local total = 0
+	local cur_dist = 0
 	local dir = vector.direction(start_pos, pos)
 	local segment_count = math.floor(dist / 0.2)
+	local last_pos = start_pos
 	for i = 1, segment_count do
-		local take = math.min(0.2, dist - total)
-		total = total + take
-		table.insert(pi.tasks, {type = "move", pos = start_pos + (dir * total)})
-		if total >= dist - 0.1 then break end
+		local take = math.min(0.2, dist - cur_dist)
+		cur_dist = cur_dist + take
+		local target_pos = start_pos + (dir * cur_dist)
+
+		local obj = core.add_entity(vector.offset(last_pos, 0, 0.1, 0), "bhk_main:gui_task_move")
+		local ent = obj and obj:get_luaentity()
+		if ent then
+			ent:_set_target(target_pos)
+			ent._parent = player
+		end
+		table.insert(pi.tasks, {type = "move", pos = target_pos, obj = obj})
+		if cur_dist >= dist - 0.1 then break end
+		last_pos = target_pos
 	end
 	pi.last_move_pos = pos
 end
@@ -61,7 +71,7 @@ core.register_tool("bhk_main:move_tool", {
     on_use = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
-		pointed_thing = bhk_main.get_pointed_thing(itemstack, user)
+		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
 		bhk_main.queue_task_move(user, pointed_thing.intersection_point, pi)
     end,
@@ -69,10 +79,8 @@ core.register_tool("bhk_main:move_tool", {
     on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
-		pointed_thing = bhk_main.get_pointed_thing(itemstack, user)
-		if not pointed_thing then
-			core.log("NO POINTED THING")
-			return end
+		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
+		if not pointed_thing then return end
 		bhk_main.queue_task_look(user, pointed_thing.intersection_point, pi)
     end,
 	range = 100,
@@ -107,6 +115,15 @@ core.register_globalstep(function(dtime)
 end)
 
 
+function bhk_main.task_remove(player, pi, i)
+	pi = pi or bhk_main.pi(player)
+	local task = table.remove(pi.tasks, i)
+	if task.obj then
+		task.obj:remove()
+	end
+end
+
+
 
 function bhk_main.do_tasks(player, pi)
 	pi = pi or bhk_main.pi(player)
@@ -127,10 +144,56 @@ function bhk_main.do_tasks(player, pi)
 		pi.fow_blocker._look_yaw = task.yaw
 	end
 
-	table.remove(pi.tasks, 1)
+	bhk_main.task_remove(player, pi, 1)
 end
 
 
+core.register_entity("bhk_main:gui_task_move", {
+    initial_properties = {
+        textures = {
+			"[fill:2x2:#05f",
+		},
+        visual = "mesh",
+		mesh = "bhk_task_move.glb",
+        use_texture_alpha = true,
+        pointable = false,
+        physical = false,
+        static_save = false,
+    },
+	_set_target = function(self, tpos)
+		local pos = self.object:get_pos()
+		local yaw = core.dir_to_yaw(vector.direction(pos, tpos))
+		local opos = (tpos - pos)
+		self.object:set_bone_override("line_start", {
+			rotation = {
+				vec = vector.new(0, -yaw, 0),
+				absolute = true,
+			}
+		})
+		self.object:set_bone_override("line_end", {
+			position = {
+				vec = opos,
+				interpolation = 1,
+				absolute = true,
+			},
+			rotation = {
+				vec = vector.new(0, -yaw, 0),
+				absolute = true,
+			}
+		})
+		self.object:set_bone_override("root", {
+			scale = {
+				vec = vector.new(10, 10, 10),
+				interpolation = 1,
+			}
+		})
+	end,
+    on_step = function(self, dtime, moveresult)
+		if not core.is_player(self._parent) then
+			return self.object:remove()
+		end
+    end,
+})
 
 core.register_entity("bhk_main:fplayer", {
     initial_properties = {

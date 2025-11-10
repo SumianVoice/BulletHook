@@ -146,12 +146,12 @@ function bhk_main.get_tool_range(itemstack)
 	or core.registered_items[""].range or 4)
 end
 
-function bhk_main.get_pointed_thing(itemstack, player)
+function bhk_main.get_pointed_thing(itemstack, player, lock_y)
 	local eyepos = bhk_main.get_eyepos(player)
 	local point = eyepos + (player:get_look_dir() * bhk_main.get_tool_range(itemstack))
 	local ray = core.raycast(eyepos, point, false, false, nil)
 	for pt in ray do
-		if pt.type == "node" then
+		if (pt.type == "node") and (math.abs(pt.intersection_point.y - 48) < 0.8) then
 			return pt
 		end
 	end
