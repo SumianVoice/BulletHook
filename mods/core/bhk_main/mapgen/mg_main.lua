@@ -87,7 +87,7 @@ function bhk_main.generators.main(minp, maxp)
     local chunk_width = bhk_main.chunk_width or 80
     local vm, emin, emax = core.get_mapgen_object("voxelmanip")
 
-	if math.floor(minp.y/80) ~= 0 then
+    if vector.length(vector.floor(minp / chunk_width)) > 0 then
         core.generate_decorations(vm, minp, emax)
         core.generate_ores(vm, minp, emax)
         vm:write_to_map()
@@ -147,12 +147,30 @@ function bhk_main.generators.main(minp, maxp)
     core.generate_decorations(vm, minp, emax)
     core.generate_ores(vm, minp, emax)
 
+	local area = VoxelArea:new{MinEdge = emin, MaxEdge = emax}
+    local data = vm:get_data()
+
+    -- local blocker_cid = core.get_content_id("bhk_main:los_blocker")
+	-- for z = minp.z, maxp.z, 1 do
+	-- for x = minp.y, maxp.y, 1 do
+    --     local is_fill = false
+    --     for y = 1, (chunk_width - 1), 1 do
+    --         local i = area:index(x, y, z)
+    --         local di = data[i]
+    --         if (not is_fill) and (di == blocker_cid) then
+    --             is_fill = true
+    --         elseif is_fill then
+    --             data[i] = blocker_cid
+    --         end
+    --     end
+    -- end
+    -- end
+
+    vm:set_data(data)
     vm:write_to_map()
     vm:calc_lighting()
     vm:update_liquids()
 
-	local area = VoxelArea:new{MinEdge = emin, MaxEdge = emax}
-    local data = vm:get_data()
     for i in area:iterp(minp, emax) do
         local pos = area:position(i)
         local dv = data[i]
@@ -161,6 +179,5 @@ function bhk_main.generators.main(minp, maxp)
             bhk_main.on_generate_node(node_name, pos)
         end
     end
-    -- vm:set_data(data)
     core.fix_light(minp, emax)
 end
