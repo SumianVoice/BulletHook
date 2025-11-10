@@ -12,25 +12,15 @@ function bhk_main.queue_task_move(player, pos, pi)
 	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
 	local dist = vector.distance(start_pos, pos)
 	if dist < 0.1 then return end
-	local cur_dist = 0
-	local dir = vector.direction(start_pos, pos)
-	local segment_count = math.floor(dist / 0.2)
-	local last_pos = start_pos
-	for i = 1, segment_count do
-		local take = math.min(0.2, dist - cur_dist)
-		cur_dist = cur_dist + take
-		local target_pos = start_pos + (dir * cur_dist)
 
-		local obj = core.add_entity(last_pos, "bhk_main:gui_task_move")
-		local ent = obj and obj:get_luaentity()
-		if ent then
-			ent:_set_target(target_pos)
-			ent._parent = player
-		end
-		table.insert(pi.tasks, {type = "move", pos = target_pos, obj = obj})
-		if cur_dist >= dist - 0.1 then break end
-		last_pos = target_pos
+	local obj = core.add_entity(start_pos, "bhk_main:gui_task_move")
+	local ent = obj and obj:get_luaentity()
+	if ent then
+		ent:_set_target(pos)
+		ent._parent = player
 	end
+	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj})
+
 	pi.last_move_pos = pos
 end
 
@@ -38,16 +28,9 @@ function bhk_main.queue_task_look(player, pos, pi)
 	pi = pi or bhk_main.pi(player)
 	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
-	local start_yaw = pi.last_look_yaw or 0
 	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
-	local yaw = core.dir_to_yaw(vector.direction(start_pos, pos))
-	local dist = (bhk_main.angle_difference(start_yaw, yaw))
-	if math.abs(dist) < 0.001 then return end
-	local segment_count = math.abs(math.ceil(dist / 0.2)) + 1
-	for i = 1, segment_count do
-		local to_yaw = start_yaw + dist * math.min(1, i/segment_count)
-		table.insert(pi.tasks, {type = "look", yaw = to_yaw})
-	end
+
+	table.insert(pi.tasks, {type = "look", pos = pos})
 
 	local obj = core.add_entity(start_pos, "bhk_main:gui_task_look")
 	local ent = obj and obj:get_luaentity()
@@ -56,8 +39,6 @@ function bhk_main.queue_task_look(player, pos, pi)
 		ent._parent = player
 	end
 	pi.tasks[#pi.tasks].obj = obj
-
-	pi.last_look_yaw = yaw
 end
 
 function bhk_main.queue_task_wait(player, time, pi)
