@@ -3,20 +3,30 @@ local mod_path = core.get_modpath(mod_name)
 local S = core.get_translator(mod_name)
 
 bhk_main.task_max_count = 50
+bhk_main.task_max_time = 5
 
-function bhk_main.get_end_of_queue(player, pi)
-	local task = pi.tasks[#pi.tasks]
-	if task then
+---gets the connected position vector of the move queue
+---@param player table `player`
+---@param pi table|nil
+---@param i number|nil
+---@param forward boolean|nil
+---@return table|nil 
+function bhk_main.get_queue_next_pos(player, pi, i, forward, look_for_type)
+	pi = pi or assert(bhk_main.pi(player))
+	for k = (i or #pi.tasks), 1, (forward and 1 or -1) do
+		local task = pi.tasks[k]
+		if task and task.type == (look_for_type or "move") then
+			return forward and task.start_pos or task.pos
+		end
 	end
 end
 
-
 function bhk_main.queue_task_move(player, pos, pi)
-	pi = pi or bhk_main.pi(player)
+	pi = pi or assert(bhk_main.pi(player))
 	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = pi.fplayer
 	if not fplayer then return end
-	local start_pos = pi.last_move_pos or fplayer.object:get_pos()
+	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
 	local dist = vector.distance(start_pos, pos)
 	if dist < 0.1 then return end
 
@@ -27,33 +37,29 @@ function bhk_main.queue_task_move(player, pos, pi)
 		ent._parent = player
 	end
 
-	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj, start_pos = start_pos, time = 0, time_total = dist})
-
-	pi.last_move_pos = vector.copy(pos)
+	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj, start_pos = start_pos, time = 0, time_total = dist/2})
 end
 
 function bhk_main.queue_task_look(player, pos, pi)
-	pi = pi or bhk_main.pi(player)
+	pi = pi or assert(bhk_main.pi(player))
 	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
-	local start_pos = pi.last_look_pos or fplayer.object:get_pos()
-	local place_pos = pi.last_move_pos or fplayer.object:get_pos()
+	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false, "look") or fplayer.object:get_pos()
+	local last_move_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
 
 	table.insert(pi.tasks, {type = "look", pos = pos, start_pos = start_pos, time = 0, time_total = 1})
 
-	local obj = core.add_entity(place_pos, "bhk_main:gui_task_look")
+	local obj = core.add_entity(last_move_pos, "bhk_main:gui_task_look")
 	local ent = obj and obj:get_luaentity()
 	if ent then
 		ent:_set_target(pos)
 		ent._parent = player
 	end
 	pi.tasks[#pi.tasks].obj = obj
-
-	pi.last_look_pos = vector.copy(pos)
 end
 
 function bhk_main.queue_task_wait(player, time, pi)
-	pi = pi or bhk_main.pi(player)
+	pi = pi or assert(bhk_main.pi(player))
 	if #pi.tasks >= bhk_main.task_max_count then return end
 end
 
@@ -89,6 +95,7 @@ core.register_tool("bhk_main:move_undo", {
     on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
+		if #pi.tasks < 1 then return end
 		bhk_main.task_remove(user, pi, #pi.tasks)
     end,
 	range = 100,
@@ -125,6 +132,7 @@ end)
 
 function bhk_main.task_remove(player, pi, i)
 	pi = pi or bhk_main.pi(player)
+	if #pi.tasks < i then return end
 	local task = table.remove(pi.tasks, i)
 	if task.obj then
 		task.obj:remove()
@@ -177,7 +185,7 @@ function bhk_main.do_tasks(player, dtime, pi)
 		end
 	elseif task.type == "look" then
 		local pos = (task.pos * f) + (task.start_pos * (1-f))
-		pi.look_target = pos
+		pi.fplayer._look_pos = pos
 	end
 
 	if task.time >= task.time_total then
@@ -285,15 +293,10 @@ core.register_entity("bhk_main:gui_task_look", {
 core.register_entity("bhk_main:fplayer", {
     initial_properties = {
         textures = {
-			"[fill:2x2:#0f0",
-			"[fill:2x2:#0f0",
-			"[fill:2x2:#0f0",
-			"[fill:2x2:#0f0",
-			"[fill:2x2:#0f0",
-			"[fill:2x2:#0f0",
+			"bhk_fplayer.png^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
 		},
-        visual = "cube",
-		mesh = "",
+        visual = "mesh",
+		mesh = "bhk_fplayer.glb",
         use_texture_alpha = true,
         pointable = false,
         physical = false,
@@ -305,14 +308,54 @@ core.register_entity("bhk_main:fplayer", {
 		end
 
 		local pi = assert(bhk_main.pi(self._parent))
-		if pi.look_target and not self._target then
-			local fpos = self.object:get_pos()
-			local tyaw = core.dir_to_yaw(vector.direction(fpos, pi.look_target))
-			local yaw = bhk_main.angle_lerp(self.object:get_yaw(), tyaw, 0.2)
-			pi.fplayer.object:set_yaw(yaw)
-			pi.fow_blocker._look_yaw = yaw
+		local last_move_pos = bhk_main.get_queue_next_pos(self._parent, pi, 1, true, "move")
+		local last_look_pos = self._look_pos
+		local fpos = self.object:get_pos()
+		if last_move_pos then
+			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_move_pos))
+			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.2)
+			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.01 then
+				self._cab_yaw = yaw
+				self.object:set_bone_override("cab", {
+					rotation = {
+						vec = vector.new(0, -yaw + math.pi, 0),
+						interpolation = 0.8,
+						absolute = true,
+					}
+				})
+			end
+		end
+
+		local task = pi.tasks[1]
+		if (task and task.type == "move") then
+			if self._anim ~= "walk" then
+				self.object:set_animation({x=20/24, y=59/24}, 1.4, 0.2, true)
+				self._anim = "walk"
+			end
+		else
+			if self._anim ~= "idle" then
+				self.object:set_animation({x=0/24, y=19/24}, 1, 0.2, true)
+				self._anim = "idle"
+			end
+		end
+
+		if last_look_pos and not self._target then
+			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_look_pos))
+			local yaw = bhk_main.angle_difference(self._turret_yaw or 0, tyaw)
+			local amount = math.min(dtime * math.pi, math.abs(yaw))
+			self._turret_yaw = ((self._turret_yaw or 0) + math.sign(yaw) * amount) % (math.pi*2)
+			self.object:set_bone_override("turret", {
+				rotation = {
+					vec = vector.new(0, -self._turret_yaw, 0),
+					interpolation = 0.1,
+					absolute = true,
+				}
+			})
+			pi.fow_blocker._look_yaw = self._turret_yaw
 		end
     end,
+	on_activate = function(self, staticdata)
+	end,
 })
 
 core.register_entity("bhk_main:fow_blocker", {
