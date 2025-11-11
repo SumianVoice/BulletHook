@@ -33,6 +33,7 @@ function bhk_main.queue_task_move(player, pos, pi)
 	local obj = core.add_entity(start_pos, "bhk_main:gui_task_move")
 	local ent = obj and obj:get_luaentity()
 	if ent then
+		ent.object:set_observers({[player:get_player_name()] = true})
 		ent:_set_target(pos)
 		ent._parent = player
 	end
@@ -52,6 +53,7 @@ function bhk_main.queue_task_look(player, pos, pi)
 	local obj = core.add_entity(last_move_pos, "bhk_main:gui_task_look")
 	local ent = obj and obj:get_luaentity()
 	if ent then
+		ent.object:set_observers({[player:get_player_name()] = true})
 		ent:_set_target(pos)
 		ent._parent = player
 	end
@@ -112,7 +114,10 @@ core.register_globalstep(function(dtime)
 			pos.y = 49
 			local obj = core.add_entity(pos, "bhk_main:fplayer")
 			pi.fplayer = obj and obj:get_luaentity()
-			if pi.fplayer then pi.fplayer._parent = player end
+			if pi.fplayer then
+				pi.fplayer.object:set_observers({[player:get_player_name()] = true})
+				pi.fplayer._parent = player
+			end
 		end
 
 		if not pi.fow_blocker then
@@ -121,6 +126,7 @@ core.register_globalstep(function(dtime)
 			local obj = core.add_entity(pos, "bhk_main:fow_blocker")
 			pi.fow_blocker = obj and obj:get_luaentity()
 			if pi.fow_blocker then
+				pi.fow_blocker.object:set_observers({[player:get_player_name()] = true})
 				pi.fow_blocker._parent = player
 				pi.fow_blocker._look_yaw = 0
 				pi.fow_blocker._look_fov = math.pi/2
@@ -302,6 +308,7 @@ core.register_entity("bhk_main:fplayer", {
         physical = false,
         static_save = false,
     },
+	_team = 0,
     on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
