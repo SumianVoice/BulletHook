@@ -189,7 +189,6 @@ function exord_gunlike.GunDef._on_step(self, dtime)
 	if self.infinite then rounds = 9999999 end
 	self.is_firing = (self.intent_firing > 0) and (rounds > 0) and self.is_full_auto
 
-	core.log(tostring(self.is_firing))
 	if self.is_firing and self.is_full_auto then
 		local pos, dir = self:get_fire_pos_dir()
 		if self.dir_override then
