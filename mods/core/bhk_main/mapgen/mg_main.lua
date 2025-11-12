@@ -92,8 +92,8 @@ function bhk_main.generators.main(minp, maxp)
         core.generate_ores(vm, minp, emax)
         vm:write_to_map()
         vm:calc_lighting()
-        vm:update_liquids()
-        core.fix_light(minp, emax)
+        -- vm:update_liquids()
+        -- core.fix_light(minp, emax)
         return
     end
 

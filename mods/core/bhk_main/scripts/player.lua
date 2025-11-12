@@ -296,7 +296,11 @@ core.register_entity("bhk_main:gui_task_look", {
     end,
 })
 
-core.register_entity("bhk_main:fplayer", {
+function bhk_main.get_target(self, range)
+end
+
+---@class fplayer
+local fplayer = {
     initial_properties = {
         textures = {
 			"bhk_fplayer.png^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
@@ -309,6 +313,16 @@ core.register_entity("bhk_main:fplayer", {
         static_save = false,
     },
 	_team = 0,
+	_is_active_character = true,
+	_aim_pos = nil,
+	_target = nil,
+	_anim = nil,
+	_cab_yaw = 0,
+	_turret_yaw = 0,
+	---@param self fplayer
+	---@param dtime number
+	---@param moveresult table|nil
+	---@return any
     on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
@@ -363,7 +377,8 @@ core.register_entity("bhk_main:fplayer", {
     end,
 	on_activate = function(self, staticdata)
 	end,
-})
+}
+core.register_entity("bhk_main:fplayer", fplayer)
 
 core.register_entity("bhk_main:fow_blocker", {
     initial_properties = {
