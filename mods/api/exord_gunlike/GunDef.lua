@@ -47,7 +47,7 @@ function exord_gunlike.GunDef.sound_play_default(self, name, log)
 		spec = table.copy(spec)
 		spec.object = self.object
 		spec.pos = self.pos or (self.object and self.object:get_pos())
-		id = minetest.sound_play(spec.name, spec, not log)
+		id = core.sound_play(spec.name, spec, not log)
 	end
 	if log and id then
 		table.insert(self.sound_id_list, id)
@@ -59,9 +59,9 @@ function exord_gunlike.GunDef.sound_stop_all(self, fade)
 	for i = #self.sound_id_list-1, 1, -2 do
 		local id = self.sound_id_list[i]
 		if fade then
-			minetest.sound_fade(id, fade, 0)
+			core.sound_fade(id, fade, 0)
 		else
-			minetest.sound_stop(id)
+			core.sound_stop(id)
 		end
 		table.remove(self.sound_id_list, i)
 		table.remove(self.sound_id_list, i)
@@ -77,10 +77,10 @@ function exord_gunlike.GunDef.sound_loop_start_fire(self, fade)
 		if fade then
 			local gain = spec.gain or 1
 			spec.gain = 0.0001
-			self.sid_loop = minetest.sound_play(spec.name, spec, false)
-			minetest.sound_fade(self.sid_loop, fade, gain)
+			self.sid_loop = core.sound_play(spec.name, spec, false)
+			core.sound_fade(self.sid_loop, fade, gain)
 		else
-			self.sid_loop = minetest.sound_play(spec.name, spec, false)
+			self.sid_loop = core.sound_play(spec.name, spec, false)
 		end
 	end
 	spec = self["sound_fire_loop_start"]
@@ -88,23 +88,23 @@ function exord_gunlike.GunDef.sound_loop_start_fire(self, fade)
 		spec = table.copy(spec)
 		spec.object = self.object
 		spec.pos = self.pos or (self.object and self.object:get_pos())
-		minetest.sound_play(spec.name, spec, true)
+		core.sound_play(spec.name, spec, true)
 	end
 end
 
 function exord_gunlike.GunDef.sound_loop_stop_fire(self, fade)
 	if not self.sid_loop then return end
 	if fade then
-		minetest.sound_fade(self.sid_loop, fade, 0)
+		core.sound_fade(self.sid_loop, fade, 0)
 	else
-		minetest.sound_stop(self.sid_loop)
+		core.sound_stop(self.sid_loop)
 	end
 	local spec = self["sound_fire_loop_end"]
 	if spec then
 		spec = table.copy(spec)
 		spec.object = self.object
 		spec.pos = self.pos or (self.object and self.object:get_pos())
-		minetest.sound_play(spec.name, spec, true)
+		core.sound_play(spec.name, spec, true)
 	end
 end
 

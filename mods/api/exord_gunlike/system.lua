@@ -123,8 +123,8 @@ function exord_gunlike.on_step_player(player, dtime)
 	end
 end
 
-minetest.register_globalstep(function(dtime)
-	for i, player in ipairs(minetest.get_connected_players()) do
+core.register_globalstep(function(dtime)
+	for i, player in ipairs(core.get_connected_players()) do
 		exord_gunlike.on_step_player(player, dtime)
 	end
 end)

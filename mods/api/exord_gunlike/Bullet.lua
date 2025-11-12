@@ -16,8 +16,8 @@ function exord_gunlike.BulletDef.set_acceleration(self, acc) self.acceleration =
 
 
 function exord_gunlike.BulletDef.can_collide_node(self, pointed_thing)
-	local node = minetest.get_node_or_nil(pointed_thing.under)
-	local ndef = node and minetest.registered_nodes[node.name]
+	local node = core.get_node_or_nil(pointed_thing.under)
+	local ndef = node and core.registered_nodes[node.name]
 	if ndef and ndef.walkable then return true end
 end
 
@@ -47,7 +47,7 @@ function exord_gunlike.BulletDef.on_impact_entity(self, entity, pointed_thing, i
 end
 function exord_gunlike.BulletDef.on_max_range_reached(self) end
 function exord_gunlike.BulletDef.on_step(self, dtime)
-	minetest.add_particle({
+	core.add_particle({
 		pos = vector.offset(self.pos, 0, -0.1, 0),
 		texture = "[fill:1x1:0,0:#fff",
 		velocity = self.velocity * 0.9,
@@ -79,7 +79,7 @@ function exord_gunlike.BulletDef._on_step(self, dtime)
 		self:remove()
 	end
 
-	local ray = minetest.raycast(self.last_pos, self.pos, true, true, nil)
+	local ray = core.raycast(self.last_pos, self.pos, true, true, nil)
 	for pointed_thing in ray do
 		if (self.penetrations > 0) and self:try_collide(pointed_thing) then
 			self.penetrations = self.penetrations - 1
@@ -145,7 +145,7 @@ function exord_gunlike.BulletDef.new_def(def)
 	return def
 end
 
-minetest.register_globalstep(function(dtime)
+core.register_globalstep(function(dtime)
 	for i = #exord_gunlike.bullet_list, 1, -1 do
 		local self = exord_gunlike.bullet_list[i]
 		self:_on_step(dtime)
