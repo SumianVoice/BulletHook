@@ -9,6 +9,7 @@ bhk_main = {
     dev_mode = false,
     nodes_pointable = true,
 	generators = {},
+	game_pause = false,
 	flags = {
 		doors_block_light = false,
 	},
