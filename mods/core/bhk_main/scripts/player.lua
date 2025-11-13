@@ -317,6 +317,8 @@ local fplayer = {
 	_aim_pos = nil,
 	_target = nil,
 	_anim = nil,
+	_paused = false,
+	_parent = nil,
 	_cab_yaw = 0,
 	_turret_yaw = 0,
 	---@param self fplayer
@@ -327,6 +329,16 @@ local fplayer = {
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
+
+		if bhk_main.game_pause and not self._paused then
+			self._paused = true
+			self.object:set_animation_frame_speed(0.3)
+		elseif (not bhk_main.game_pause) and self._paused then
+			self._paused = false
+			self.object:set_animation_frame_speed(1)
+		end
+
+		if self._paused then return end
 
 		local pi = assert(bhk_main.pi(self._parent))
 		local last_move_pos = bhk_main.get_queue_next_pos(self._parent, pi, 1, true, "move")
