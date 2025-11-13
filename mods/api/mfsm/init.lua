@@ -9,16 +9,20 @@
 ---@field _MFSM_globalstep_enabled boolean
 ---@field _MFSM_on_any_state_start function
 ---@field _MFSM_on_any_state_end function
+---@field _MFSM_host any
 MFSM = {}
 
 local _state_machine_globalsteps = {}
 
 -- called after any state starts
+---@param self MFSM|table
 function MFSM._MFSM_on_any_state_start(self, state_name, meta) end
 -- called after any state ends
+---@param self MFSM|table
 function MFSM._MFSM_on_any_state_end(self, state_name, meta) end
 
 -- runs every time you change stuff, to make sure your entity is set up correctly
+---@param self MFSM|table
 function MFSM.init_states(self)
     if self._MFSM_has_init then return end
     self._MFSM_active_states = {}
@@ -31,6 +35,7 @@ function MFSM.init_states(self)
     self._MFSM_has_init = true
 end
 -- get the temporary metadata that is given to each state seperately
+---@param self MFSM|table
 ---@param state_name string
 function MFSM.get_state_meta(self, state_name)
     local meta = self._MFSM_state_meta[state_name]
@@ -38,6 +43,7 @@ function MFSM.get_state_meta(self, state_name)
     return meta
 end
 -- do the state code, based on functype e.g. on_step or on_end
+---@param self MFSM|table
 ---@param state_name string
 ---@param functype string
 function MFSM.do_state(self, state_name, functype, ...)
@@ -46,6 +52,7 @@ function MFSM.do_state(self, state_name, functype, ...)
     end
 end
 -- set a single state and trigger its on_start if it isn't already active
+---@param self MFSM|table
 ---@param state_name string
 ---@param active boolean | nil
 ---@param exclusive boolean | nil
@@ -77,6 +84,7 @@ function MFSM.set_state(self, state_name, active, exclusive)
     end
 end
 -- set a map of states to their given values
+---@param self MFSM|table
 ---@param states table
 ---@param exclusive boolean | nil
 function MFSM.set_states(self, states, exclusive)
@@ -91,6 +99,7 @@ function MFSM.set_states(self, states, exclusive)
     end
 end
 -- put this in your on_step of your entity (or use the enable_globalstep if it's not an entity)
+---@param self MFSM|table
 function MFSM.on_step(self, dtime)
     MFSM.init_states(self)
     for i, state in ipairs(self._MFSM_states) do
@@ -102,6 +111,7 @@ function MFSM.on_step(self, dtime)
     end
 end
 -- removes all active states
+---@param self MFSM|table
 ---@param exclude_list table | nil
 function MFSM.reset_all_states(self, exclude_list)
     if not exclude_list then exclude_list = {} end
@@ -114,12 +124,14 @@ function MFSM.reset_all_states(self, exclude_list)
     end
 end
 -- add to the globalstep list so that `on_step` happens automatically
+---@param self MFSM|table
 function MFSM.enable_globalstep(self)
     if self._MFSM_globalstep_enabled then return end
     self._MFSM_globalstep_enabled = true
     table.insert(_state_machine_globalsteps, self)
 end
 -- remove from the globalstep list so it doesn't `on_step`
+---@param self MFSM|table
 function MFSM.disable_globalstep(self)
     if not self._MFSM_globalstep_enabled then return end
     local i = table.indexof(_state_machine_globalsteps, self)
