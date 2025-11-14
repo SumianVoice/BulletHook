@@ -111,7 +111,7 @@ core.register_globalstep(function(dtime)
 		local pi = assert(bhk_main.pi(player))
 		if not pi.fplayer then
 			local pos = player:get_pos()
-			pos.y = 49
+			pos.y = bhk_main.get_game_area_floor() + 0.5
 			local obj = core.add_entity(pos, "bhk_main:fplayer")
 			pi.fplayer = obj and obj:get_luaentity()
 			if pi.fplayer then
@@ -122,7 +122,7 @@ core.register_globalstep(function(dtime)
 
 		if not pi.fow_blocker then
 			local pos = player:get_pos()
-			pos.y = 52.51
+			pos.y = bhk_main.get_game_area_floor() + 4.51
 			local obj = core.add_entity(pos, "bhk_main:fow_blocker")
 			pi.fow_blocker = obj and obj:get_luaentity()
 			if pi.fow_blocker then

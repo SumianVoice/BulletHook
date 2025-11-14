@@ -15,8 +15,8 @@ bhk_main = {
 	},
 }
 
-bhk_main.gamearea_min = vector.new(-40, 1000, -40)
-bhk_main.gamearea_max = vector.new( 40, 1010,  40)
+bhk_main.gamearea_min = vector.new(-48, 1008, -48)
+bhk_main.gamearea_max = vector.new( 48, 1088,  48)
 
 function bhk_main.is_point_inside_game_area(p)
 	return bhk_main.is_box_point_overlap(bhk_main.gamearea_min, bhk_main.gamearea_max, p)
@@ -189,7 +189,7 @@ function bhk_main.get_pointed_thing(itemstack, player, lock_y)
 	local point = eyepos + (player:get_look_dir() * bhk_main.get_tool_range(itemstack))
 	local ray = core.raycast(eyepos, point, false, false, nil)
 	for pt in ray do
-		if (pt.type == "node") and (math.abs(pt.intersection_point.y - 48) < 0.8) then
+		if (pt.type == "node") and (math.abs(pt.intersection_point.y - bhk_main.get_game_area_floor()) < 0.8) then
 			return pt
 		end
 	end

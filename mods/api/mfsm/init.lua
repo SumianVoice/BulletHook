@@ -149,9 +149,10 @@ end)
 
 MFSM.__meta = {__index = MFSM}
 
--- create a new state machine, optionally inserting it into `host` table
+-- create a new state machine
 ---@param host table
 ---@return MFSM
 function MFSM.new(host)
-    return setmetatable(host or {}, MFSM.__meta)
+    host = table.copy(host)
+    return setmetatable(host, MFSM.__meta)
 end

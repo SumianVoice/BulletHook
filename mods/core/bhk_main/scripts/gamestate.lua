@@ -1,25 +1,63 @@
 
-bhk_main.state = MFSM.new({
+bhk_main.player_on_join_state = "mapgen"
+
+bhk_main.playerstate_proto = {
 	_MFSM_states = {
-        {
-            name = "freeplay",
+		{name = "mapgen",
 			on_step = function(self, dtime, meta)
-				-- meta._t = (meta._t or 0) - dtime
-				-- local nt = 0.1
-				-- if meta._t > 0 then return else meta._t = meta._t + nt end
-				for i, player in ipairs(core.get_connected_players()) do
-					local pi = assert(bhk_main.pi(player))
-					bhk_main.do_tasks(player, dtime, pi)
+			end,
+			on_start = function(self, meta)
+			end,
+			on_end = function(self, meta)
+				if core.is_player(self._MFSM_host) then
+					self._MFSM_host:set_pos(vector.new(
+						(bhk_main.gamearea_min.x + bhk_main.gamearea_max.x) * 0.5,
+						bhk_main.get_game_area_floor() + 12,
+						(bhk_main.gamearea_min.z + bhk_main.gamearea_max.z) * 0.5
+					))
 				end
 			end,
-            on_start = function(self, meta)
-            end,
-            on_end = function(self, meta)
-            end,
-            protected = true,
-        },
-        {
-            name = "planning",
+			protected = true,
+		},
+		{name = "planning",
+			on_step = function(self, dtime, meta)
+			end,
+			on_start = function(self, meta)
+			end,
+			on_end = function(self, meta)
+			end,
+			protected = true,
+		},
+		{name = "play",
+			on_step = function(self, dtime, meta)
+			end,
+			on_start = function(self, meta)
+			end,
+			on_end = function(self, meta)
+			end,
+			protected = true,
+		},
+	},
+}
+
+core.register_globalstep(function(dtime)
+	for i, player in ipairs(core.get_connected_players()) do
+		local pi = assert(bhk_main.pi(player))
+		if not pi.MFSM then
+			pi.MFSM = MFSM.new(bhk_main.playerstate_proto)
+			core.log(dump(pi.MFSM))
+			pi.MFSM._MFSM_host = player
+			pi.MFSM:set_state(bhk_main.player_on_join_state, true)
+			pi.MFSM:set_state(bhk_main.player_on_join_state, false)
+		else
+			pi.MFSM:on_step(dtime)
+		end
+	end
+end)
+
+bhk_main.state = MFSM.new({
+	_MFSM_states = {
+        {name = "planning",
 			---@param self MFSM
 			on_step = function(self, dtime, meta)
 				for i, player in ipairs(core.get_connected_players()) do
@@ -35,8 +73,7 @@ bhk_main.state = MFSM.new({
             end,
             protected = true,
         },
-        {
-            name = "play",
+        {name = "play",
 			on_step = function(self, dtime, meta)
 				for i, player in ipairs(core.get_connected_players()) do
 					local pi = assert(bhk_main.pi(player))
