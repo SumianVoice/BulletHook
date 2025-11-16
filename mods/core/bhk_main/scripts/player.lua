@@ -403,13 +403,15 @@ local fplayer = {
 		local fpos = self.object:get_pos()
 		if last_move_pos then
 			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_move_pos))
-			-- local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.2)
-			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, tyaw)) > 0.01 then
-				self._cab_yaw = tyaw
+			tyaw = (-tyaw + math.pi)
+			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.09)
+			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.001 then
+				self._cab_yaw = yaw
+				core.log(yaw)
 				self.object:set_bone_override("hips", {
 					rotation = {
-						vec = vector.new(0, (-tyaw + math.pi*3) % (math.pi*2), 0),
-						interpolation = 0.4,
+						vec = vector.new(0, yaw, 0),
+						interpolation = dtime + 0.08,
 						absolute = true,
 					}
 				})
