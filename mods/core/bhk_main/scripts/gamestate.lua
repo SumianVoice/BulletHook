@@ -64,18 +64,18 @@ bhk_main.state = MFSM.new({
         {name = "planning",
 			---@param self MFSM
 			on_step = function(self, dtime, meta)
-				for i, player in ipairs(core.get_connected_players()) do
-					local pi = assert(bhk_main.pi(player))
-				end
+				-- for i, player in ipairs(core.get_connected_players()) do
+				-- 	local pi = assert(bhk_main.pi(player))
+				-- end
 				if meta.state_time > 3 then
-					self:set_state("play", true, true)
+					-- self:set_state("play", true, true)
 				end
 			end,
             on_start = function(self, meta)
             end,
             on_end = function(self, meta)
             end,
-            protected = true,
+            protected = false,
         },
         {name = "play",
 			on_step = function(self, dtime, meta)
@@ -84,7 +84,7 @@ bhk_main.state = MFSM.new({
 					bhk_main.do_tasks(player, dtime, pi)
 				end
 				if meta.state_time > 3 then
-					self:set_state("planning", true, true)
+					-- self:set_state("planning", true, true)
 				end
 			end,
             on_start = function(self, meta)
@@ -93,11 +93,11 @@ bhk_main.state = MFSM.new({
             on_end = function(self, meta)
 				bhk_main.game_pause = true
             end,
-            protected = true,
+            protected = false,
         },
 	}
 })
 bhk_main.state:enable_globalstep()
 
 -- bhk_main.state:set_state("freeplay", true, true)
-bhk_main.state:set_state("planning", true, true)
+bhk_main.state:set_state("play", true, true)

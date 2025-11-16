@@ -142,6 +142,24 @@ core.register_tool("bhk_main:move_undo", {
 	range = 100,
 })
 
+core.register_tool("bhk_main:pause", {
+    description = S("Toggle Pause"),
+    inventory_image = "[fill:2x2:#ff0^[fill:1x1:1,0:#00f",
+    wield_image = "blank.png",
+    groups = {},
+    -- on_secondary_use = function(itemstack, user, pointed_thing) end,
+    on_place = function(itemstack, user, pointed_thing)
+		if bhk_main.game_pause then
+			core.log("unpause")
+			bhk_main.state:set_state("play", true, true)
+		else
+			core.log("pause")
+			bhk_main.state:set_state("planning", true, true)
+		end
+    end,
+	range = 100,
+})
+
 
 
 core.register_globalstep(function(dtime)
@@ -374,7 +392,7 @@ local fplayer = {
 			self.object:set_animation_frame_speed(0.3)
 		elseif (not bhk_main.game_pause) and self._paused then
 			self._paused = false
-			self.object:set_animation_frame_speed(1)
+			self.object:set_animation_frame_speed(1.4)
 		end
 
 		if self._paused then return end
@@ -385,13 +403,13 @@ local fplayer = {
 		local fpos = self.object:get_pos()
 		if last_move_pos then
 			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_move_pos))
-			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.2)
-			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.01 then
-				self._cab_yaw = yaw
-				self.object:set_bone_override("cab", {
+			-- local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.2)
+			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, tyaw)) > 0.01 then
+				self._cab_yaw = tyaw
+				self.object:set_bone_override("hips", {
 					rotation = {
-						vec = vector.new(0, -yaw + math.pi, 0),
-						interpolation = 0.8,
+						vec = vector.new(0, (-tyaw + math.pi*3) % (math.pi*2), 0),
+						interpolation = 0.4,
 						absolute = true,
 					}
 				})
@@ -401,7 +419,7 @@ local fplayer = {
 		local task = pi.tasks[1]
 		if (task and task.type == "move") then
 			if self._anim ~= "walk" then
-				self.object:set_animation({x=20/24, y=59/24}, 1.4, 0.2, true)
+				self.object:set_animation({x=40/24, y=79/24}, 1.4, 0.2, true)
 				self._anim = "walk"
 			end
 		else
