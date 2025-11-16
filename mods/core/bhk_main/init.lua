@@ -16,7 +16,7 @@ bhk_main = {
 }
 
 bhk_main.gamearea_min = vector.new(-48, 1008, -48)
-bhk_main.gamearea_max = vector.new( 48, 1088,  48)
+bhk_main.gamearea_max = vector.new( 48, 1087,  48)
 
 function bhk_main.is_point_inside_game_area(p)
 	return bhk_main.is_box_point_overlap(bhk_main.gamearea_min, bhk_main.gamearea_max, p)
@@ -93,9 +93,6 @@ dofile(mod_path .. "/nodes" .. "/decoration.lua")
 dofile(mod_path .. "/nodes" .. "/furniture.lua")
 dofile(mod_path .. "/nodes" .. "/lights.lua")
 dofile(mod_path .. "/nodes" .. "/doors.lua")
-
-dofile(mod_path .. "/mapgen" .. "/mg_main.lua")
-
 
 function bhk_main.angle_difference(a0, a1)
     local max = math.pi * 2

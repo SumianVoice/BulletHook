@@ -1,8 +1,12 @@
 
 bhk_main.player_on_join_state = "mapgen"
+if bhk_main.dev_mode then
+	bhk_main.player_on_join_state = "dev"
+end
 
 bhk_main.playerstate_proto = {
 	_MFSM_states = {
+		{name = "dev"},
 		{name = "mapgen",
 			on_step = function(self, dtime, meta)
 			end,
@@ -17,7 +21,7 @@ bhk_main.playerstate_proto = {
 					))
 				end
 			end,
-			protected = true,
+			protected = false,
 		},
 		{name = "planning",
 			on_step = function(self, dtime, meta)
@@ -26,7 +30,7 @@ bhk_main.playerstate_proto = {
 			end,
 			on_end = function(self, meta)
 			end,
-			protected = true,
+			protected = false,
 		},
 		{name = "play",
 			on_step = function(self, dtime, meta)
@@ -35,7 +39,7 @@ bhk_main.playerstate_proto = {
 			end,
 			on_end = function(self, meta)
 			end,
-			protected = true,
+			protected = false,
 		},
 	},
 }

@@ -21,6 +21,42 @@ function bhk_main.get_queue_next_pos(player, pi, i, forward, look_for_type)
 	end
 end
 
+function bhk_main.task_can_move(start_pos, pos)
+	pos = vector.round(pos)
+	start_pos = vector.round(start_pos)
+	pos.y = bhk_main.get_game_area_floor()
+	start_pos.y = bhk_main.get_game_area_floor()
+	local dist = vector.distance(start_pos, pos)
+	local dir = vector.direction(start_pos, pos)
+	for i = 0, math.ceil(dist) do
+		local p = vector.round(start_pos + (dir * i))
+		p.y = bhk_main.get_game_area_floor()
+		bhk_main.debug_particle(vector.offset(p, 0, 1, 0), "#ff0", 2, nil, 4)
+		local nodes = core.find_nodes_in_area(
+			vector.offset(p, -1, 0, -1),
+			vector.offset(p,  1, 0,  1),
+			{"group:solid"}
+		)
+		-- no floor
+		if nodes and (#nodes < 9) then
+			bhk_main.debug_particle(vector.offset(p, 0, 1, 0), "#f00", 2, nil, 10)
+			return false
+		end
+
+		nodes = core.find_nodes_in_area(
+			vector.offset(p, -1, 1, -1),
+			vector.offset(p,  1, 1,  1),
+			{"group:full_solid"}
+		)
+		-- has walls
+		if nodes and (#nodes > 1) then
+			bhk_main.debug_particle(vector.offset(p, 0, 1, 0), "#f0f", 2, nil, 10)
+			return false
+		end
+	end
+	return true
+end
+
 function bhk_main.queue_task_move(player, pos, pi)
 	pi = pi or assert(bhk_main.pi(player))
 	if #pi.tasks >= bhk_main.task_max_count then return end
@@ -29,6 +65,11 @@ function bhk_main.queue_task_move(player, pos, pi)
 	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
 	local dist = vector.distance(start_pos, pos)
 	if dist < 0.1 then return end
+
+	if not bhk_main.task_can_move(start_pos, pos) then
+		core.log("cannot move there")
+		-- return
+	end
 
 	local obj = core.add_entity(start_pos, "bhk_main:gui_task_move")
 	local ent = obj and obj:get_luaentity()
@@ -60,11 +101,6 @@ function bhk_main.queue_task_look(player, pos, pi)
 	pi.tasks[#pi.tasks].obj = obj
 end
 
-function bhk_main.queue_task_wait(player, time, pi)
-	pi = pi or assert(bhk_main.pi(player))
-	if #pi.tasks >= bhk_main.task_max_count then return end
-end
-
 core.register_tool("bhk_main:move_tool", {
     description = S("Move Tool"),
     inventory_image = "[fill:2x2:#f0f^[fill:1x1:1,0:#fff",
@@ -75,6 +111,7 @@ core.register_tool("bhk_main:move_tool", {
 		if not pi then return end
 		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
+		-- if not bhk_main.game_pause then return end
 		bhk_main.queue_task_move(user, pointed_thing.intersection_point, pi)
     end,
     -- on_secondary_use = function(itemstack, user, pointed_thing) end,
@@ -83,6 +120,7 @@ core.register_tool("bhk_main:move_tool", {
 		if not pi then return end
 		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
+		-- if not bhk_main.game_pause then return end
 		bhk_main.queue_task_look(user, pointed_thing.intersection_point, pi)
     end,
 	range = 100,
@@ -98,6 +136,7 @@ core.register_tool("bhk_main:move_undo", {
 		local pi = bhk_main.pi(user)
 		if not pi then return end
 		if #pi.tasks < 1 then return end
+		-- if not bhk_main.game_pause then return end
 		bhk_main.task_remove(user, pi, #pi.tasks)
     end,
 	range = 100,
@@ -122,7 +161,7 @@ core.register_globalstep(function(dtime)
 
 		if not pi.fow_blocker then
 			local pos = player:get_pos()
-			pos.y = bhk_main.get_game_area_floor() + 4.51
+			pos.y = bhk_main.get_game_area_floor() + 0.59 -- + 4.51
 			local obj = core.add_entity(pos, "bhk_main:fow_blocker")
 			pi.fow_blocker = obj and obj:get_luaentity()
 			if pi.fow_blocker then
@@ -207,7 +246,7 @@ core.register_entity("bhk_main:gui_task_move", {
 		},
         visual = "mesh",
 		mesh = "bhk_task_move.glb",
-        use_texture_alpha = true,
+        use_texture_alpha = false,
         pointable = false,
         physical = false,
         static_save = false,
@@ -255,7 +294,7 @@ core.register_entity("bhk_main:gui_task_look", {
 		},
         visual = "mesh",
 		mesh = "bhk_task_look.glb",
-        use_texture_alpha = true,
+        use_texture_alpha = false,
         pointable = false,
         physical = false,
         static_save = false,
@@ -307,7 +346,7 @@ local fplayer = {
 		},
         visual = "mesh",
 		mesh = "bhk_fplayer.glb",
-        use_texture_alpha = true,
+        use_texture_alpha = false,
         pointable = false,
         physical = false,
         static_save = false,
@@ -413,7 +452,7 @@ core.register_entity("bhk_main:fow_blocker", {
 		local max_dist = 40
 		local dir = core.yaw_to_dir(yaw)
 		local pos = self.object:get_pos()
-		pos.y = 50
+		pos.y = bhk_main.get_game_area_floor() + 1
 		local target_pos
 		local pointed_thing
 		if math.abs(bhk_main.angle_difference(self._look_yaw, yaw)) > (self._look_fov / 2) then
