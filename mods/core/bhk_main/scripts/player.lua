@@ -102,53 +102,53 @@ function bhk_main.queue_task_look(player, pos, pi)
 end
 
 core.register_tool("bhk_main:move_tool", {
-    description = S("Move Tool"),
-    inventory_image = "[fill:2x2:#f0f^[fill:1x1:1,0:#fff",
-    wield_image = "blank.png",
-    groups = {},
-    on_use = function(itemstack, user, pointed_thing)
+	description = S("Move Tool"),
+	inventory_image = "[fill:2x2:#f0f^[fill:1x1:1,0:#fff",
+	wield_image = "blank.png",
+	groups = {},
+	on_use = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
 		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
 		-- if not bhk_main.game_pause then return end
 		bhk_main.queue_task_move(user, pointed_thing.intersection_point, pi)
-    end,
-    -- on_secondary_use = function(itemstack, user, pointed_thing) end,
-    on_place = function(itemstack, user, pointed_thing)
+	end,
+	-- on_secondary_use = function(itemstack, user, pointed_thing) end,
+	on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
 		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
 		if not pointed_thing then return end
 		-- if not bhk_main.game_pause then return end
 		bhk_main.queue_task_look(user, pointed_thing.intersection_point, pi)
-    end,
+	end,
 	range = 100,
 })
 
 core.register_tool("bhk_main:move_undo", {
-    description = S("Undo"),
-    inventory_image = "[fill:2x2:#f00^[fill:1x1:1,0:#fff",
-    wield_image = "blank.png",
-    groups = {},
-    -- on_secondary_use = function(itemstack, user, pointed_thing) end,
-    on_place = function(itemstack, user, pointed_thing)
+	description = S("Undo"),
+	inventory_image = "[fill:2x2:#f00^[fill:1x1:1,0:#fff",
+	wield_image = "blank.png",
+	groups = {},
+	-- on_secondary_use = function(itemstack, user, pointed_thing) end,
+	on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
 		if #pi.tasks < 1 then return end
 		-- if not bhk_main.game_pause then return end
 		bhk_main.task_remove(user, pi, #pi.tasks)
-    end,
+	end,
 	range = 100,
 })
 
 core.register_tool("bhk_main:pause", {
-    description = S("Toggle Pause"),
-    inventory_image = "[fill:2x2:#ff0^[fill:1x1:1,0:#00f",
-    wield_image = "blank.png",
-    groups = {},
-    -- on_secondary_use = function(itemstack, user, pointed_thing) end,
-    on_place = function(itemstack, user, pointed_thing)
+	description = S("Toggle Pause"),
+	inventory_image = "[fill:2x2:#ff0^[fill:1x1:1,0:#00f",
+	wield_image = "blank.png",
+	groups = {},
+	-- on_secondary_use = function(itemstack, user, pointed_thing) end,
+	on_place = function(itemstack, user, pointed_thing)
 		if bhk_main.game_pause then
 			core.log("unpause")
 			bhk_main.state:set_state("play", true, true)
@@ -156,7 +156,7 @@ core.register_tool("bhk_main:pause", {
 			core.log("pause")
 			bhk_main.state:set_state("planning", true, true)
 		end
-    end,
+	end,
 	range = 100,
 })
 
@@ -259,18 +259,18 @@ end
 
 
 core.register_entity("bhk_main:gui_task_move", {
-    initial_properties = {
-        textures = {
+	initial_properties = {
+		textures = {
 			"[fill:2x2:#19f^[fill:2x2:#4af",
 		},
-        visual = "mesh",
+		visual = "mesh",
 		mesh = "bhk_task_move.glb",
-        use_texture_alpha = false,
-        pointable = false,
-        physical = false,
-        static_save = false,
+		use_texture_alpha = false,
+		pointable = false,
+		physical = false,
+		static_save = false,
 		glow = 14,
-    },
+	},
 	_set_target = function(self, tpos)
 		local pos = self.object:get_pos()
 		local yaw = core.dir_to_yaw(vector.direction(pos, tpos))
@@ -299,26 +299,26 @@ core.register_entity("bhk_main:gui_task_move", {
 			},
 		})
 	end,
-    on_step = function(self, dtime, moveresult)
+	on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
-    end,
+	end,
 })
 
 core.register_entity("bhk_main:gui_task_look", {
-    initial_properties = {
-        textures = {
+	initial_properties = {
+		textures = {
 			"[fill:2x2:#fb0",
 		},
-        visual = "mesh",
+		visual = "mesh",
 		mesh = "bhk_task_look.glb",
-        use_texture_alpha = false,
-        pointable = false,
-        physical = false,
-        static_save = false,
+		use_texture_alpha = false,
+		pointable = false,
+		physical = false,
+		static_save = false,
 		glow = 14,
-    },
+	},
 	_set_target = function(self, tpos)
 		local pos = self.object:get_pos()
 		local yaw = core.dir_to_yaw(vector.direction(pos, tpos))
@@ -347,11 +347,11 @@ core.register_entity("bhk_main:gui_task_look", {
 			},
 		})
 	end,
-    on_step = function(self, dtime, moveresult)
+	on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
-    end,
+	end,
 })
 
 function bhk_main.get_target(self, range)
@@ -362,17 +362,17 @@ local RIGHT = vector.new(1, 0, 0)
 
 ---@class fplayer
 local fplayer = {
-    initial_properties = {
-        textures = {
+	initial_properties = {
+		textures = {
 			"bhk_fplayer.png^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
 		},
-        visual = "mesh",
+		visual = "mesh",
 		mesh = "bhk_fplayer.glb",
-        use_texture_alpha = false,
-        pointable = false,
-        physical = false,
-        static_save = false,
-    },
+		use_texture_alpha = false,
+		pointable = false,
+		physical = false,
+		static_save = false,
+	},
 	_team = 0,
 	_is_active_character = true,
 	_aim_pos = nil,
@@ -384,8 +384,8 @@ local fplayer = {
 	_view_fov = math.pi/2,
 	_turret_yaw = 0,
 	_turret_elevation = 0,
-	---@type GunDef
-	_gun = bhk_main.player_gun.new(),
+	---@type GunDef|nil
+	_gun = nil,
 	_turret_offset = vector.new(0, 54, 0) / 32,
 	_muzzle_offset = vector.new(0, 7, 33) / 32,
 	_get_muzzle_position = function(self)
@@ -399,7 +399,7 @@ local fplayer = {
 	---@param dtime number
 	---@param moveresult table|nil
 	---@return any
-    on_step = function(self, dtime, moveresult)
+	on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
@@ -414,6 +414,7 @@ local fplayer = {
 
 		if self._paused then return end
 
+		if not self._gun then self._gun = bhk_main.player_gun.new() end
 		self._gun:_on_step(dtime)
 
 		local pi = assert(bhk_main.pi(self._parent))
@@ -469,22 +470,22 @@ local fplayer = {
 			})
 			pi.fow_blocker._look_yaw = self._turret_yaw
 		end
-    end,
+	end,
 	on_activate = function(self, staticdata)
 	end,
 }
 core.register_entity("bhk_main:fplayer", fplayer)
 
 core.register_entity("bhk_main:fow_blocker", {
-    initial_properties = {
-        textures = {"[fill:2x2:#000000a0"},
-        visual = "mesh",
+	initial_properties = {
+		textures = {"[fill:2x2:#000000a0"},
+		visual = "mesh",
 		mesh = "bhk_fow_cover.glb",
-        use_texture_alpha = true,
-        pointable = false,
-        physical = false,
-        static_save = false,
-    },
+		use_texture_alpha = true,
+		pointable = false,
+		physical = false,
+		static_save = false,
+	},
 	_cur = -1,
 	_look_yaw = 0,
 	_view_fov = math.pi*3,
@@ -528,7 +529,7 @@ core.register_entity("bhk_main:fow_blocker", {
 			}
 		})
 	end,
-    on_step = function(self, dtime, moveresult)
+	on_step = function(self, dtime, moveresult)
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
@@ -537,5 +538,5 @@ core.register_entity("bhk_main:fow_blocker", {
 			self:_raycast_next()
 		end
 		-- core.log(os.clock()-cl)
-    end,
+	end,
 })

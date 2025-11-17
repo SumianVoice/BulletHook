@@ -29,7 +29,7 @@ function bhk_main.do_muzzle_flash(pos, vel, count, force, size, exp)
             },
         },
         glow = 14,
-        collisiondetection = true,
+        -- collisiondetection = true,
         minpos = pos,
         maxpos = pos,
         minvel = vel * 0.75 - off,
@@ -111,12 +111,21 @@ bhk_main.player_gun = exord_gunlike.GunDef.new({
 	penetrations = 1,
 	---@type BulletDef
 	BulletDef = exord_gunlike.BulletDef.new_def({
-		speed = 200000,
+		speed = 20000,
 		acceleration = vector.new(0, 0, 0),
 		max_range = 100,
 		max_time = 1,
 		---@param self BulletDef
 		on_impact_node = function(self, pointed_thing, is_final_impact)
+			-- bhk_main.debug_particle(pointed_thing.intersection_point, "#fff", 0.2)
+			bhk_main.do_proj_muzzle_flash_typical(
+				pointed_thing.intersection_point, -vector.normalize(self.velocity) * 6,
+				nil, 0.2, 10, 0.8, 0.4
+			)
+			bhk_main.do_proj_muzzle_flash_typical(
+				pointed_thing.intersection_point, -vector.normalize(self.velocity) * 12,
+				nil, 0.5, 10, 0.2, 0.4
+			)
 			if is_final_impact then
 				local sdef = table.copy(bhk_main.sounds._sound_impact)
 				sdef.pos = pointed_thing.intersection_point or pointed_thing.above
@@ -128,8 +137,8 @@ bhk_main.player_gun = exord_gunlike.GunDef.new({
 	}),
 	---@param self GunDef
 	on_fire = function(self, pos, dir)
-		bhk_main.do_proj_muzzle_flash_typical(pos, dir * 6, nil, 0.2, 30, 0.4, 0.7)
-		bhk_main.do_proj_muzzle_flash_typical(pos, dir * 32, nil, 0.2, 30, 0.2, 0.4)
+		bhk_main.do_proj_muzzle_flash_typical(pos, dir * 6, nil, 0.2, 20, 0.6, 1)
+		bhk_main.do_proj_muzzle_flash_typical(pos, dir * 22, nil, 0.2, 20, 0.2, 0.4)
 	end,
 	---@param self GunDef
 	get_fire_pos_dir = function(self)

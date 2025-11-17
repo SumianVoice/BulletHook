@@ -1,17 +1,17 @@
 
 ---@class mob_walker
 local mob_walker = {
-    initial_properties = {
-        textures = {
+	initial_properties = {
+		textures = {
 			"bhk_main_placeholder_16x.png^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
 		},
-        visual = "mesh",
+		visual = "mesh",
 		mesh = "bhk_mob_walker.glb",
-        use_texture_alpha = true,
-        pointable = false,
-        physical = false,
-        static_save = false,
-    },
+		use_texture_alpha = true,
+		pointable = false,
+		physical = false,
+		static_save = false,
+	},
 	_team = 0,
 	_is_active_character = true,
 	_aim_pos = nil,
@@ -21,15 +21,17 @@ local mob_walker = {
 	_cab_yaw = 0,
 	_view_fov = math.pi/2,
 	_turret_yaw = 0,
+	---@type GunDef|nil
+	_gun = nil,
 	_MFSM_states = {
 		{name = "idle",
 			---@param self mob_walker|MFSM
 			on_step = function(self, dtime, meta)
 			end,
-            on_start = function(self, meta)
-            end,
-            on_end = function(self, meta)
-            end,
+			on_start = function(self, meta)
+			end,
+			on_end = function(self, meta)
+			end,
 		},
 		{name = "attack",
 			---@param self mob_walker|MFSM
@@ -37,6 +39,16 @@ local mob_walker = {
 				if bhk_main.game_pause then
 					self.object:set_velocity(vector.new(0, 0, 0))
 					return
+				end
+
+				if not self._gun then self._gun = bhk_main.player_gun.new() end
+				self._gun:_on_step(dtime)
+
+				bhk_mobs.get_target(self, nil)
+				if meta.int_los:on_timer(dtime) then
+					if self._target and not bhk_mobs.has_los_to_target(self, self._target) then
+						self._target = nil
+					end
 				end
 				local objects = core.get_objects_in_area(bhk_main.gamearea_min, bhk_main.gamearea_max)
 				for i, o in ipairs(objects) do
@@ -49,22 +61,27 @@ local mob_walker = {
 				if self._target then
 					local target_pos = self._target.object:get_pos()
 					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
-					self.object:set_velocity(dir)
+					self.object:set_velocity(dir or vector.new(0, 0, 0))
+
+					self._gun.pos = self:_get_muzzle_position()
+					self._gun.dir = vector.direction(self._gun.pos, self._look_pos)
+					self._gun:signal_firing()
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end
 			end,
-            on_start = function(self, meta)
-            end,
-            on_end = function(self, meta)
-            end,
+			on_start = function(self, meta)
+				meta.int_los = bhk_main.InTimer.new(1)
+			end,
+			on_end = function(self, meta)
+			end,
 		},
 	},
 	---@param self mob_walker
 	---@param dtime number
 	---@param moveresult table|nil
 	---@return any
-    on_step = function(self, dtime, moveresult)
+	on_step = function(self, dtime, moveresult)
 		MFSM.on_step(self, dtime)
 
 		if bhk_main.game_pause and not self._paused then
@@ -74,7 +91,7 @@ local mob_walker = {
 			self._paused = false
 			self.object:set_animation_frame_speed(1)
 		end
-    end,
+	end,
 	on_activate = function(self, staticdata)
 	end,
 }
