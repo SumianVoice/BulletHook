@@ -10,6 +10,7 @@ bhk_main = {
     nodes_pointable = true,
 	generators = {},
 	game_pause = true,
+	sound_gain_multiplier = 4,
 	flags = {
 		doors_block_light = false,
 	},
@@ -47,6 +48,7 @@ function bhk_main.debug_particle(pos, color, time, vel, size)
 end
 
 dofile(mod_path .. "/scripts" .. "/helpers.lua")
+dofile(mod_path .. "/scripts" .. "/player_gun.lua")
 dofile(mod_path .. "/scripts" .. "/gamestate.lua")
 dofile(mod_path .. "/scripts" .. "/player.lua")
 dofile(mod_path .. "/scripts" .. "/OptionList.lua")

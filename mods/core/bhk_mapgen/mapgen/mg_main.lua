@@ -77,9 +77,9 @@ local schems = bhk_main.OptionList({
 	{{name=sch("bhk_0_block_1")}, 1},
 	{{name=sch("bhk_0_block_2")}, 2},
 
-	{{name=sch("bhk_0_catwalk_0")}, 0.2},
-	{{name=sch("bhk_0_catwalk_1")}, 0.2},
-	{{name=sch("bhk_0_catwalk_2")}, 0.2},
+	{{name=sch("bhk_0_catwalk_0")}, 0.5},
+	{{name=sch("bhk_0_catwalk_1")}, 0.5},
+	{{name=sch("bhk_0_catwalk_2")}, 0.5},
 }, 78)
 
 function bhk_mapgen.generators.main(minp, maxp)

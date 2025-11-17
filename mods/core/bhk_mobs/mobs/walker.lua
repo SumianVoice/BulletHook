@@ -19,6 +19,7 @@ local mob_walker = {
 	_anim = nil,
 	_paused = false,
 	_cab_yaw = 0,
+	_view_fov = math.pi/2,
 	_turret_yaw = 0,
 	_MFSM_states = {
 		{name = "idle",

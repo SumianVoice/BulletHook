@@ -115,9 +115,11 @@ end
 function exord_gunlike.GunDef.on_removed(self) end
 
 function exord_gunlike.GunDef.fire_round(self, pos, dir, parent)
+	-- core.log("fire")
 	dir = vector.normalize(dir + exord_gunlike.vec3random(-1,1) * self.inaccuracy)
 	local bullet = self.BulletDef:new(pos, dir)
 	bullet.parent = parent
+	self:on_fire(pos, dir)
 	exord_gunlike.GunDef.sound_play_default(self, "sound_fire", false)
 end
 
@@ -134,16 +136,9 @@ function exord_gunlike.GunDef.get_fire_pos_dir(self)
 end
 
 function exord_gunlike.GunDef.handle_reload(self, dtime)
-	local time = self.t_reload
-	if time < 1 then return end
-	if self.reload_time == 0 then
-		time = 0
-	else
-		time = time - dtime
-		time = math.max(0, time)
-	end
-	self.t_reload = time
-	if time < 1 then
+	if self.t_reload <= 0 then return end
+	self.t_reload = math.max(0, self.t_reload - dtime)
+	if self.t_reload <= 0 then
 		exord_gunlike.GunDef.end_reload(self)
 	end
 end
@@ -155,7 +150,9 @@ function exord_gunlike.GunDef.start_reload(self)
 end
 
 function exord_gunlike.GunDef.end_reload(self)
+	core.log("reload")
 	self.rounds = self.mag_cap
+	self.chambered = 0
 	exord_gunlike.GunDef.sound_play_default(self, "sound_reload_end", true)
 end
 
@@ -207,7 +204,7 @@ function exord_gunlike.GunDef._on_step(self, dtime)
 		end
 	end
 
-	if rounds < 1 and self.t_reload <= 0 then
+	if (rounds < 1) and (self.t_reload <= 0) and (self.chambered >= 1) then
 		self:start_reload()
 	end
 
@@ -231,6 +228,7 @@ function exord_gunlike.GunDef._on_step(self, dtime)
 
 	self.was_firing = self.is_firing
 	self.is_firing = false
+	self.intent_firing = 0
 end
 
 -- params

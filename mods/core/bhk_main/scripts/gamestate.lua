@@ -49,7 +49,6 @@ core.register_globalstep(function(dtime)
 		local pi = assert(bhk_main.pi(player))
 		if not pi.MFSM then
 			pi.MFSM = MFSM.new(bhk_main.playerstate_proto)
-			core.log(dump(pi.MFSM))
 			pi.MFSM._MFSM_host = player
 			pi.MFSM:set_state(bhk_main.player_on_join_state, true)
 			pi.MFSM:set_state(bhk_main.player_on_join_state, false)

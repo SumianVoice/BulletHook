@@ -47,6 +47,20 @@ core.register_alias("mapgen_stone", "air")
 core.register_alias("mapgen_water_source", "air")
 core.register_alias("mapgen_river_water_source", "air")
 
+core.register_node("bhk_main:light_14", {
+    description = "blocks light",
+    pointable = bhk_main.dev_mode or false,
+    groups = { dig_immediate = 3 },
+    drawtype = (bhk_main.dev_mode and "glasslike") or "airlike",
+    tiles = { "bhk_barrier.png^[colorize:#ff0:255" },
+    use_texture_alpha = "clip",
+    sounds = {},
+    light_source = core.LIGHT_MAX,
+    paramtype = "light",
+    sunlight_propagates = true,
+    walkable = false,
+})
+
 core.register_node("bhk_main:light_blocker", {
     description = "blocks light",
     pointable = bhk_main.dev_mode or false,

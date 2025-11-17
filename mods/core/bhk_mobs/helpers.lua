@@ -5,14 +5,18 @@ local ZERO = vector.new(0,0,0)
 bhk_mobs.pathfinding_options = bhk_mobpath.Options.new({
 	TRAVERSAL = function(p1, p2)
 		local nodes = core.find_nodes_in_area(
-			vector.offset(p2, -1, -1,-1),
-			vector.offset(p2,  1, -1, 1),
+			vector.offset(p2, -0, -1,-0),
+			vector.offset(p2,  0, -1, 0),
 			"group:full_solid"
 		)
-		if nodes and (#nodes < 9) then return false end
+		if nodes and (#nodes < 1) then return false end
+		nodes = core.find_nodes_in_area(
+			vector.offset(p2, -0, 1,-0),
+			vector.offset(p2,  0, 1, 0),
+			"group:solid"
+		)
 		return true
 	end,
-	-- BEST_GUESS_SORT = function(a_node, b_node) return (a_node.H < b_node.H) end,
 	max_search = 300,
 	BEST_GUESS_SORT = function(a_node, b_node)
 		return a_node.H + math.min(10, a_node.G) < b_node.H + math.min(10, b_node.G)
@@ -23,9 +27,9 @@ bhk_mobs.pathfinding_options = bhk_mobpath.Options.new({
 		local extra_cost = node and core.get_item_group(node.name, "traversible_extra_cost") or 0
 		-- avoid walls
 		local nodes = core.find_nodes_in_area(
-			vector.offset(p2, -2, 0,-2),
-			vector.offset(p2,  2, 0, 2),
-			"group:traversible_extra_cost"
+			vector.offset(p2, -1, 0,-1),
+			vector.offset(p2,  1, 0, 1),
+			"group:full_solid"
 		)
 		extra_cost = extra_cost + math.min(4, #nodes*2)
 		return bhk_mobpath.dist2(p1, p2) + (extra_cost)^2
@@ -47,6 +51,10 @@ bhk_mobs.__options_meta = {__index = bhk_mobs.pathfinding_options}
 -- get the direction to the next point in a path to the target
 -- recalculate if you run out of points or the target is far away
 -- remove points from the path as you reach them
+---@param self table
+---@param target_pos table
+---@param force boolean|nil
+---@return table|nil
 function bhk_mobs.check_get_path_dir(self, target_pos, force)
     local pos = self.object:get_pos()
     if (self._time_since_los or 0) < 0.1 then
@@ -83,4 +91,47 @@ function bhk_mobs.check_get_path_dir(self, target_pos, force)
         end
         return dir
     end
+end
+
+---@param pos1 table
+---@param pos2 table
+---@return boolean
+function bhk_mobs.line_of_sight(self, pos1, pos2)
+	local ray = core.raycast(pos1, pos2, false, false, nil)
+	for pt in ray do
+		if pt.type == "node" and core.get_item_group(core.get_node(pt.under), "solid") then
+			return false
+		end
+	end
+	return true
+end
+
+function bhk_mobs.has_los_to_target(self, target)
+	local pos1 = self.object:get_pos()
+	local pos2 = target.object:get_pos()
+	pos1.y = pos1.y + 1.5
+	pos2.y = pos2.y + 1.5
+	local tyaw = core.dir_to_yaw(vector.direction(pos1, pos2))
+	if math.abs(bhk_main.angle_difference((self._turret_yaw or 0), tyaw)) > (self._view_fov / 2) then
+		return false
+	end
+	local ray = core.raycast(pos1, pos2, false, false, nil)
+	for pt in ray do
+		if pt.type == "node" and core.get_item_group(core.get_node(pt.under), "solid") then
+			return false
+		end
+	end
+	return true
+end
+
+function bhk_mobs.get_target(self, flags)
+	local objects = core.get_objects_in_area(bhk_main.gamearea_min, bhk_main.gamearea_max)
+	for i, o in ipairs(objects) do
+		local ent = o:get_luaentity()
+		if ent and (ent._team ~= self._team)
+		and (bhk_mobs.has_los_to_target(self, ent)) then
+			self._target = ent
+			return ent
+		end
+	end
 end

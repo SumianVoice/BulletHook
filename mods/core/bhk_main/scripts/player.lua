@@ -86,7 +86,7 @@ function bhk_main.queue_task_look(player, pos, pi)
 	pi = pi or assert(bhk_main.pi(player))
 	if #pi.tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
-	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false, "look") or fplayer.object:get_pos()
+	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false, "look") or fplayer._look_pos or fplayer.object:get_pos()
 	local last_move_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
 
 	table.insert(pi.tasks, {type = "look", pos = pos, start_pos = start_pos, time = 0, time_total = 1})
@@ -186,7 +186,7 @@ core.register_globalstep(function(dtime)
 				pi.fow_blocker.object:set_observers({[player:get_player_name()] = true})
 				pi.fow_blocker._parent = player
 				pi.fow_blocker._look_yaw = 0
-				pi.fow_blocker._look_fov = math.pi/2
+				pi.fow_blocker._view_fov = math.pi/2
 			end
 		end
 	end
@@ -249,6 +249,7 @@ function bhk_main.do_tasks(player, dtime, pi)
 	elseif task.type == "look" then
 		local pos = (task.pos * f) + (task.start_pos * (1-f))
 		pi.fplayer._look_pos = pos
+		bhk_main.debug_particle(pos, "#fff", 0.2)
 	end
 
 	if task.time >= task.time_total then
@@ -356,6 +357,9 @@ core.register_entity("bhk_main:gui_task_look", {
 function bhk_main.get_target(self, range)
 end
 
+local UP = vector.new(0, 1, 0)
+local RIGHT = vector.new(1, 0, 0)
+
 ---@class fplayer
 local fplayer = {
     initial_properties = {
@@ -377,7 +381,20 @@ local fplayer = {
 	_paused = false,
 	_parent = nil,
 	_cab_yaw = 0,
+	_view_fov = math.pi/2,
 	_turret_yaw = 0,
+	_turret_elevation = 0,
+	---@type GunDef
+	_gun = bhk_main.player_gun.new(),
+	_turret_offset = vector.new(0, 54, 0) / 32,
+	_muzzle_offset = vector.new(0, 7, 33) / 32,
+	_get_muzzle_position = function(self)
+		local pos = self.object:get_pos()
+		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
+		local moff = vector.rotate_around_axis(self._muzzle_offset, UP, self._turret_yaw)
+		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
+		return pos + mpos
+	end,
 	---@param self fplayer
 	---@param dtime number
 	---@param moveresult table|nil
@@ -397,6 +414,8 @@ local fplayer = {
 
 		if self._paused then return end
 
+		self._gun:_on_step(dtime)
+
 		local pi = assert(bhk_main.pi(self._parent))
 		local last_move_pos = bhk_main.get_queue_next_pos(self._parent, pi, 1, true, "move")
 		local last_look_pos = self._look_pos
@@ -407,7 +426,6 @@ local fplayer = {
 			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.09)
 			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.001 then
 				self._cab_yaw = yaw
-				core.log(yaw)
 				self.object:set_bone_override("hips", {
 					rotation = {
 						vec = vector.new(0, yaw, 0),
@@ -419,6 +437,12 @@ local fplayer = {
 		end
 
 		local task = pi.tasks[1]
+		if (task and task.type == "look") and self._look_pos then
+			self._gun.pos = self:_get_muzzle_position()
+			self._gun.dir = vector.direction(self._gun.pos, self._look_pos)
+			self._gun:signal_firing()
+		end
+
 		if (task and task.type == "move") then
 			if self._anim ~= "walk" then
 				self.object:set_animation({x=40/24, y=79/24}, 1.4, 0.2, true)
@@ -463,7 +487,7 @@ core.register_entity("bhk_main:fow_blocker", {
     },
 	_cur = -1,
 	_look_yaw = 0,
-	_look_fov = math.pi*3,
+	_view_fov = math.pi*3,
 	_raycast_next = function(self)
 		local num = 128
 		self._cur = (self._cur + 1) % num
@@ -475,7 +499,7 @@ core.register_entity("bhk_main:fow_blocker", {
 		pos.y = bhk_main.get_game_area_floor() + 1
 		local target_pos
 		local pointed_thing
-		if math.abs(bhk_main.angle_difference(self._look_yaw, yaw)) > (self._look_fov / 2) then
+		if math.abs(bhk_main.angle_difference(self._look_yaw, yaw)) > (self._view_fov / 2) then
 			target_pos = dir * 2
 		else
 			local ray = core.raycast(pos, pos + (dir * max_dist), false, false, nil)
