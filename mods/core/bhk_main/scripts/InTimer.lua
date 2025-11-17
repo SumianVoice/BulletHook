@@ -1,9 +1,14 @@
 
+---@class InTimer
 bhk_main.InTimer = {
 	time = 0,
 	interval = 1,
 }
 
+---True if interval has passed this tick.
+---@param self InTimer
+---@param dtime number
+---@return boolean
 function bhk_main.InTimer.on_timer(self, dtime)
 	self.time = self.time + dtime
 	if self.time >= self.interval then
@@ -16,6 +21,8 @@ bhk_main.InTimer.__meta = {
 	__index = bhk_main.InTimer,
 }
 
+---@param interval number
+---@return InTimer
 function bhk_main.InTimer.new(interval)
 	return setmetatable({}, bhk_main.InTimer.__meta)
 end
