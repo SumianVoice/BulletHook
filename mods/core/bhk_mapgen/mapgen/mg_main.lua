@@ -82,6 +82,10 @@ local schems = bhk_main.OptionList({
 	{{name=sch("bhk_0_catwalk_2")}, 0.5},
 }, 78)
 
+local schems_blank = bhk_main.OptionList({
+	{{name=sch("bhk_0_spawn_0")}, 1},
+}, 78)
+
 function bhk_mapgen.generators.main(minp, maxp)
 	local segsize = 16
 	local chunk_width = bhk_main.chunk_width or 80
@@ -109,22 +113,28 @@ function bhk_mapgen.generators.main(minp, maxp)
 	local ni = 1
 	for z = 0, (chunk_width - 1), segsize do
 		for x = 0, (chunk_width - 1), segsize do
-			----------------------
-			-- ACTUAL PLACEMENT --
-			----------------------
 			local rotation_index = (math.floor(92801747 * perlin.variant.data[ni]) % #rotations) + 1
 			local rotation = rotations[rotation_index]
-			for y = 0, 0, segsize do
+			for y = 0, 0, segsize do repeat
+				local pos = vector.new((x)+minp.x, (y)+minp.y, (z)+minp.z)
+				if not bhk_main.is_point_inside_game_area(pos) then
+					break
+				end
 				-- local cpos = vector.new(x + to_grid(minp.x, segsize), y + to_grid(minp.y, segsize), z + to_grid(minp.z, segsize))
 				-- now place the schematic
-				local schem = schems:get_next_random()
+				local schem
+				if x % (chunk_width-1) == 0 and z % (chunk_width-1) == 0 then
+					schem = schems_blank:get_next_random()
+				else
+					schem = schems:get_next_random()
+				end
 				if schem then
 					if schem.rotation_offset then
 						rotation_index = (rotation + schem.rotation_offset)
 						rotation = rotations[rotation_index % 4 + 1]
 					end
 					local y_offset = schem.y_offset or 0
-					local pos = vector.new((x)+minp.x, (y)+minp.y + y_offset, (z)+minp.z)
+					pos.y = pos.y + y_offset
 					local rot = (schem.rotation and rotations[schem.rotation % 4 + 1]) or rotation
 					if schem.free_rotation then
 						rot = rotations[(math.floor(92801747 * perlin.variant.data[ni]) % #rotations) + 1]
@@ -140,7 +150,7 @@ function bhk_mapgen.generators.main(minp, maxp)
 					error(dump(schems))
 				end
 				ni = ni + 1
-			end
+			until true end
 		end
 	end
 	-- vm:set_data(data)

@@ -375,7 +375,7 @@ local fplayer = {
 	},
 	_team = 0,
 	_is_active_character = true,
-	_aim_pos = nil,
+	_look_pos = nil,
 	_target = nil,
 	_anim = nil,
 	_paused = false,
@@ -438,11 +438,12 @@ local fplayer = {
 		end
 
 		local task = pi.tasks[1]
-		if (task and task.type == "look") and self._look_pos then
-			self._gun.pos = self:_get_muzzle_position()
-			self._gun.dir = vector.direction(self._gun.pos, self._look_pos)
-			self._gun:signal_firing()
-		end
+
+		-- if (task and task.type == "look") and self._look_pos and not self._target then
+		-- 	self._gun.pos = self:_get_muzzle_position()
+		-- 	self._gun.dir = vector.direction(self._gun.pos, self._look_pos)
+		-- 	self._gun:signal_firing()
+		-- end
 
 		if (task and task.type == "move") then
 			if self._anim ~= "walk" then
@@ -456,18 +457,24 @@ local fplayer = {
 			end
 		end
 
-		if last_look_pos and not self._target then
-			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_look_pos))
-			local yaw = bhk_main.angle_difference(self._turret_yaw or 0, tyaw)
-			local amount = math.min(dtime * math.pi, math.abs(yaw))
-			self._turret_yaw = ((self._turret_yaw or 0) + math.sign(yaw) * amount) % (math.pi*2)
-			self.object:set_bone_override("turret", {
-				rotation = {
-					vec = vector.new(0, -self._turret_yaw, 0),
-					interpolation = 0.1,
-					absolute = true,
-				}
-			})
+		if self._target then
+			--
+		else
+			if last_look_pos then
+				local tyaw = core.dir_to_yaw(vector.direction(fpos, last_look_pos))
+				local yaw = bhk_main.angle_difference(self._turret_yaw or 0, tyaw)
+				local amount = math.min(dtime * math.pi, math.abs(yaw))
+				self._turret_yaw = ((self._turret_yaw or 0) + math.sign(yaw) * amount) % (math.pi*2)
+				self.object:set_bone_override("turret", {
+					rotation = {
+						vec = vector.new(0, -self._turret_yaw, 0),
+						interpolation = 0.1,
+						absolute = true,
+					}
+				})
+			end
+		end
+		if self._turret_yaw and pi.fow_blocker then
 			pi.fow_blocker._look_yaw = self._turret_yaw
 		end
 	end,

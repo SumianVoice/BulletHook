@@ -136,3 +136,7 @@ function bhk_mobs.get_target(self, flags)
 		end
 	end
 end
+
+function bhk_mobs.vector_move_toward(v, p, delta)
+	return v + vector.direction(v, p) * math.min(delta, vector.distance(v, p))
+end
