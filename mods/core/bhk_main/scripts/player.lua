@@ -504,7 +504,7 @@ core.register_entity("bhk_main:fow_blocker", {
 		local max_dist = 40
 		local dir = core.yaw_to_dir(yaw)
 		local pos = self.object:get_pos()
-		pos.y = bhk_main.get_game_area_floor() + 1
+		pos.y = bhk_main.get_game_area_floor() + 2
 		local target_pos
 		local pointed_thing
 		if math.abs(bhk_main.angle_difference(self._look_yaw, yaw)) > (self._view_fov / 2) then

@@ -27,3 +27,25 @@ else
 	})
 	core.set_mapgen_setting("mg_flags", "nocaves,nodungeons,light,decorations,nobiomes,ores", true)
 end
+
+local nullfunc = function() end
+
+local function test_on_emerge_callback(calls_remaining, callback)
+    if calls_remaining == 0 and callback then
+        callback()
+    end
+end
+
+function bhk_mapgen.regenerate(minp, maxp, callback)
+    core.log("action", "regenerating for static mapgen")
+    core.delete_area(minp, maxp)
+    core.emerge_area(minp, maxp, function(blockpos, action, calls_remaining, param)
+        -- if action == core.EMERGE_ERRORED or action == core.EMERGE_CANCELLED then end
+        test_on_emerge_callback(calls_remaining, callback)
+    end)
+end
+
+function bhk_mapgen.generate_map(seed, callback)
+    bhk_mapgen.regenerate(bhk_main.gamearea_min, bhk_main.gamearea_max, callback or nullfunc)
+end
+

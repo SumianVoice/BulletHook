@@ -129,4 +129,4 @@ local mob_walker = {
 	end,
 }
 
-core.register_entity("bhk_mobs:mob_walker", mob_walker)
+core.register_entity("bhk_mobs:walker", mob_walker)
