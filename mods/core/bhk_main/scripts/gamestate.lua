@@ -31,9 +31,9 @@ bhk_main.playerstate_proto = {
 
 				core.log("[player start] start")
 				player:set_pos(vector.new(
-					(bhk_main.gamearea_min.x + bhk_main.gamearea_max.x) * 0.5,
+					(bhk_main.gamearea_min.x) + 8,
 					bhk_main.get_game_area_floor() + 12,
-					(bhk_main.gamearea_min.z + bhk_main.gamearea_max.z) * 0.5
+					(bhk_main.gamearea_min.z) + 8
 				))
 
 				local pos = player:get_pos()
@@ -58,7 +58,7 @@ bhk_main.playerstate_proto = {
 						pi.fow_blocker._view_fov = math.pi/2
 					end
 				end
-				self:set_state("planning", true, true)
+				self:set_state("play", true, true)
 			end,
 			on_end = function(self, meta)
 			end,
@@ -73,6 +73,10 @@ bhk_main.playerstate_proto = {
 		},
 		{name = "play",
 			on_step = function(self, dtime, meta)
+				local player = self._MFSM_host
+				local pi = assert(bhk_main.pi(player))
+				if not pi then return end
+				bhk_main.do_tasks(player, dtime, pi)
 			end,
 			on_start = function(self, meta)
 			end,
@@ -130,6 +134,13 @@ bhk_main.state = MFSM.new({
 					bhk_main.player_on_join_state = "start"
 					pi.MFSM:set_state("start", true, true)
 				end
+
+				local pos = bhk_main.gamearea_min + vector.new(5, 0.51, 5)
+				local obj = core.add_entity(pos, "bhk_mobs:walker")
+				local ent = obj and obj:get_luaentity()
+				if ent then
+					ent._team = 2
+				end
             end,
             protected = false,
         },
@@ -153,10 +164,6 @@ bhk_main.state = MFSM.new({
         },
         {name = "play",
 			on_step = function(self, dtime, meta)
-				for i, player in ipairs(core.get_connected_players()) do
-					local pi = assert(bhk_main.pi(player))
-					bhk_main.do_tasks(player, dtime, pi)
-				end
 				if meta.state_time > 3 then
 					-- self:set_state("planning", true, true)
 				end
@@ -164,12 +171,6 @@ bhk_main.state = MFSM.new({
             on_start = function(self, meta)
 				bhk_main.state_name = "play"
 				bhk_main.game_pause = false
-				local pos = bhk_main.gamearea_min + vector.new(5, 0, 5)
-				local obj = core.add_entity(pos, "bhk_mobs:walker")
-				local ent = obj and obj:get_luaentity()
-				if ent then
-					ent._team = 2
-				end
             end,
             on_end = function(self, meta)
             end,

@@ -57,13 +57,6 @@ bhk_mobs.__options_meta = {__index = bhk_mobs.pathfinding_options}
 ---@return table|nil
 function bhk_mobs.check_get_path_dir(self, target_pos, force)
 	local pos = self.object:get_pos()
-	if (self._time_since_los or 0) < 0.1 then
-		local dir = vector.direction(pos, target_pos)
-		dir = core.yaw_to_dir(core.dir_to_yaw(dir))
-		return dir
-	elseif (self._time_since_los or 0) < 5 and self._last_los_pos then
-		return vector.direction(pos, self._last_los_pos)
-	end
 	local allow_update = force
 	allow_update = allow_update or ((self._path_cooldown or 0) <= 0)
 	local wants_path = (not self._path) or (#self._path < 1)
@@ -129,7 +122,7 @@ function bhk_mobs.get_target(self, flags)
 	local objects = core.get_objects_in_area(bhk_main.gamearea_min, bhk_main.gamearea_max)
 	for i, o in ipairs(objects) do
 		local ent = o:get_luaentity()
-		if ent and (ent._team ~= self._team)
+		if ent and ent._team and (ent._team ~= self._team)
 		and (bhk_mobs.has_los_to_target(self, ent)) then
 			self._target = ent
 			return ent

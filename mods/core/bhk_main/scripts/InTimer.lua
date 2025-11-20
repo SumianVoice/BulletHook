@@ -15,6 +15,7 @@ function bhk_main.InTimer.on_timer(self, dtime)
 		self.time = self.time - self.interval
 		return true
 	end
+	return false
 end
 
 bhk_main.InTimer.__meta = {
@@ -24,5 +25,8 @@ bhk_main.InTimer.__meta = {
 ---@param interval number
 ---@return InTimer
 function bhk_main.InTimer.new(interval)
-	return setmetatable({}, bhk_main.InTimer.__meta)
+	local o = setmetatable({}, bhk_main.InTimer.__meta)
+	o.interval = interval
+	o.time = 0
+	return o
 end

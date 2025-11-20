@@ -18,7 +18,7 @@ local fplayer = {
 		physical = false,
 		static_save = false,
 	},
-	_team = 0,
+	_team = 1,
 	_is_active_character = true,
 	_look_pos = nil,
 	_target = nil,
@@ -57,7 +57,10 @@ local fplayer = {
 			self.object:set_animation_frame_speed(1.4)
 		end
 
-		if self._paused then return end
+		if self._paused then
+			self.object:set_velocity(vector.new(0, 0, 0))
+			return
+		end
 
 		if not self._gun then self._gun = bhk_main.player_gun.new() end
 		self._gun:_on_step(dtime)
@@ -83,12 +86,6 @@ local fplayer = {
 		end
 
 		local task = pi.tasks[1]
-
-		-- if (task and task.type == "look") and self._look_pos and not self._target then
-		-- 	self._gun.pos = self:_get_muzzle_position()
-		-- 	self._gun.dir = vector.direction(self._gun.pos, self._look_pos)
-		-- 	self._gun:signal_firing()
-		-- end
 
 		if (task and task.type == "move") then
 			if self._anim ~= "walk" then
