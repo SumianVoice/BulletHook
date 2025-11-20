@@ -73,13 +73,11 @@ function MFSM.set_state(self, state_name, active, exclusive)
         self._MFSM_state_meta[state_name] = nil
         self._MFSM_active_states[state_name] = active
     elseif active and not has_state then
+        meta.state_time = 0
         MFSM.do_state(self, state_name, "on_start", meta)
         if self._MFSM_on_any_state_start then
             self:_MFSM_on_any_state_start(state_name, meta)
         end
-        self._MFSM_state_meta[state_name] = {
-            state_time = 0
-        }
         self._MFSM_active_states[state_name] = active
     end
 end
