@@ -91,7 +91,7 @@ function bhk_mapgen.generators.main(minp, maxp)
 	local chunk_width = bhk_main.chunk_width or 80
 	local vm, emin, emax = core.get_mapgen_object("voxelmanip")
 
-	if not bhk_main.is_point_inside_game_area(minp) then
+	if not bhk_main.is_box_overlap_game_area(minp, maxp) then
 		core.generate_decorations(vm, minp, emax)
 		core.generate_ores(vm, minp, emax)
 		vm:write_to_map()
@@ -123,7 +123,12 @@ function bhk_mapgen.generators.main(minp, maxp)
 				-- local cpos = vector.new(x + to_grid(minp.x, segsize), y + to_grid(minp.y, segsize), z + to_grid(minp.z, segsize))
 				-- now place the schematic
 				local schem
-				if x % (chunk_width-1) == 0 and z % (chunk_width-1) == 0 then
+				local cx1 = (math.floor(pos.x / segsize)     == math.floor(bhk_main.gamearea_min.x / segsize))
+				local cx2 = (math.floor(pos.x / segsize) + 1 == math.floor(bhk_main.gamearea_max.x / segsize))
+				local cz1 = (math.floor(pos.z / segsize)     == math.floor(bhk_main.gamearea_min.z / segsize))
+				local cz2 = (math.floor(pos.z / segsize) + 1 == math.floor(bhk_main.gamearea_max.z / segsize))
+				local is_corner = ((cx1 or cx2) and (cz1 or cz2))
+				if is_corner then
 					schem = schems_blank:get_next_random()
 				else
 					schem = schems:get_next_random()
