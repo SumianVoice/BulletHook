@@ -188,6 +188,7 @@ end
 
 
 function bhk_main.do_tasks(player, dtime, pi)
+	if bhk_main.game_pause then return end
 	-- do return end
 	pi = pi or bhk_main.pi(player)
 	local task = pi.tasks[1]
