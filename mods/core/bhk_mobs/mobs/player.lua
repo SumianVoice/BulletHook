@@ -11,27 +11,37 @@ local fplayer = {
 		visual = "mesh",
 		mesh = "bhk_fplayer.glb",
 		use_texture_alpha = false,
-		pointable = false,
+		-- pointable = false,
 		physical = false,
 		static_save = false,
+		selectionbox = {
+			-0.6, 0,   -0.6,
+			 0.6, 2.2,  0.6,
+		},
 	},
+	-- customization
 	_team = 1,
-	_is_active_character = true,
+	_hp = 10,
+	_view_fov = math.pi/2,
+	-- controls
 	_look_pos = nil,
 	_aim_pos = nil,
 	_target = nil,
-	_anim = nil,
 	_paused = false,
+	-- backend
+	_is_active_character = true,
 	_parent = nil,
+	_turret_offset = vector.new(0, 54, 0) / 32,
+	_muzzle_offset = vector.new(0, 7, 33) / 32,
+	---@type GunDef|nil
+	_gun = nil,
+	-- animation and bone overrides
+	_anim = nil,
 	_cab_yaw = 0,
-	_view_fov = math.pi/2,
 	_turret_yaw = 0,
 	_turret_elevation = 0,
 	_turret_move_speed = 3,
-	---@type GunDef|nil
-	_gun = nil,
-	_turret_offset = vector.new(0, 54, 0) / 32,
-	_muzzle_offset = vector.new(0, 7, 33) / 32,
+
 	_get_muzzle_position = function(self)
 		local pos = self.object:get_pos()
 		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)

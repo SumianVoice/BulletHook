@@ -11,32 +11,44 @@ local mob_walker = {
 		visual = "mesh",
 		mesh = "bhk_fplayer.glb",
 		use_texture_alpha = true,
-		pointable = false,
+		-- pointable = false,
 		physical = false,
 		static_save = false,
+		selectionbox = {
+			-0.6, 0,   -0.6,
+			 0.6, 2.2,  0.6,
+		},
 	},
+	-- customization
 	_team = 2,
-	_is_active_character = true,
-	-- where turret intends to look / watch
+	_hp = 10,
+	_view_fov = math.pi/2,
+	-- controls
 	_look_pos = nil,
-	-- where turret is currently aiming
 	_aim_pos = nil,
 	_target = nil,
-	_anim = nil,
 	_paused = false,
+	-- backend
+	_is_active_character = true,
+	_parent = nil,
+	_turret_offset = vector.new(0, 54, 0) / 32,
+	_muzzle_offset = vector.new(0, 7, 33) / 32,
+	---@type GunDef|nil
+	_gun = nil,
+	-- animation and bone overrides
+	_anim = nil,
 	_cab_yaw = 0,
 	_turret_yaw = 0,
 	_turret_elevation = 0,
 	_turret_move_speed = 3,
-	_view_fov = math.pi/2,
+	-- mob only
 	_has_los = false,
 	_time_since_los = 0,
 	_last_target_los_pos = nil,
 	_path_cooldown = 0,
-	---@type GunDef|nil
-	_gun = nil,
-	_turret_offset = vector.new(0, 54, 0) / 32,
-	_muzzle_offset = vector.new(0, 7, 33) / 32,
+	_target_loss_time = 10,
+
+	---@param self mob_walker
 	_get_muzzle_position = function(self)
 		local pos = self.object:get_pos()
 		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
@@ -44,9 +56,7 @@ local mob_walker = {
 		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
 		return pos + mpos
 	end,
-	_MFSM_on_any_state_start = function(self, state_name)
-		core.log("[walker state] ".. state_name)
-	end,
+	---@param self mob_walker
 	_aim_at = function(self, dtime, pos)
 		local fpos = self.object:get_pos()
 		local spos = self._aim_pos or fpos
@@ -64,8 +74,10 @@ local mob_walker = {
 		})
 		bhk_main.debug_particle(self._aim_pos, "#fff", 0.2)
 	end,
+	---@param self mob_walker
 	_move_toward = function(self, dtime, pos)
 	end,
+	---@param self mob_walker
 	_check_los = function(self, dtime)
 		if self._int_los:on_timer(dtime) then
 			if self._target and bhk_mobs.has_los_to_target(self, self._target) then
@@ -82,7 +94,7 @@ local mob_walker = {
 	_MFSM_name = "walker",
 	_MFSM_states = {
 		{name = "idle",
-			---@param self mob_walker|MFSM
+			---@param self mob_walker
 			on_step = function(self, dtime, meta)
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#555", 0.2)
 				if self._paused then return end
@@ -101,7 +113,7 @@ local mob_walker = {
 			end,
 		},
 		{name = "chase",
-			---@param self mob_walker|MFSM
+			---@param self mob_walker
 			on_step = function(self, dtime, meta)
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#00f", 0.2)
 				if self._paused then
@@ -120,7 +132,7 @@ local mob_walker = {
 					self._target = nil
 				end
 
-				if (not self._target) and (meta.state_time > 1) then
+				if (not self._target) and (meta.state_time > self._target_loss_time) then
 					return MFSM.set_state(self, "idle", true, true)
 				end
 
@@ -140,7 +152,7 @@ local mob_walker = {
 			end,
 		},
 		{name = "attack",
-			---@param self mob_walker|MFSM
+			---@param self mob_walker
 			on_step = function(self, dtime, meta)
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#f00", 0.2)
 				if self._paused then

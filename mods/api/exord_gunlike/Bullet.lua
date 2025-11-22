@@ -32,7 +32,7 @@ function exord_gunlike.BulletDef.try_collide(self, pointed_thing)
 		local entity = (pointed_thing.type == "object") and (pointed_thing.ref ~= self.parent) and pointed_thing.ref:get_luaentity()
 		if entity and (self.collided_objects[pointed_thing.ref] == nil) then
 			self.collided_objects[pointed_thing.ref] = true
-			return self:on_impact_entity(entity, pointed_thing, self.penetrations <= 1)
+			return self:on_impact_entity(pointed_thing, self.penetrations <= 1)
 		end
 	end
 
@@ -42,7 +42,7 @@ end
 function exord_gunlike.BulletDef.on_impact_node(self, pointed_thing, is_final_impact)
 	-- core.log("impact")
 end
-function exord_gunlike.BulletDef.on_impact_entity(self, entity, pointed_thing, is_final_impact)
+function exord_gunlike.BulletDef.on_impact_entity(self, pointed_thing, is_final_impact)
 	-- core.log("impact")
 end
 function exord_gunlike.BulletDef.on_max_range_reached(self) end

@@ -99,6 +99,17 @@ bhk_main.sounds = {
     },
 }
 
+local function do_hit_particles(pos, dir)
+    bhk_main.do_proj_muzzle_flash_typical(
+        pos, dir * 2,
+        nil, 0.1, 10, 0.5, 0.4
+    )
+    bhk_main.do_proj_muzzle_flash_typical(
+        pos, dir * 6,
+        nil, 0.3, 10, 0.2, 0.4
+    )
+end
+
 ---@type GunDef
 bhk_main.player_gun = exord_gunlike.GunDef.new({
 	name = "testgun",
@@ -115,17 +126,14 @@ bhk_main.player_gun = exord_gunlike.GunDef.new({
 		acceleration = vector.new(0, 0, 0),
 		max_range = 100,
 		max_time = 1,
+        on_impact_entity = function(self, pointed_thing, is_final_impact)
+            local o = pointed_thing.ref
+            if not o then return end
+            do_hit_particles(pointed_thing.intersection_point, -vector.normalize(self.velocity))
+        end,
 		---@param self BulletDef
 		on_impact_node = function(self, pointed_thing, is_final_impact)
-			-- bhk_main.debug_particle(pointed_thing.intersection_point, "#fff", 0.2)
-			bhk_main.do_proj_muzzle_flash_typical(
-				pointed_thing.intersection_point, -vector.normalize(self.velocity) * 6,
-				nil, 0.2, 10, 0.8, 0.4
-			)
-			bhk_main.do_proj_muzzle_flash_typical(
-				pointed_thing.intersection_point, -vector.normalize(self.velocity) * 12,
-				nil, 0.5, 10, 0.2, 0.4
-			)
+            do_hit_particles(pointed_thing.intersection_point, -vector.normalize(self.velocity))
 			if is_final_impact then
 				local sdef = table.copy(bhk_main.sounds._sound_impact)
 				sdef.pos = pointed_thing.intersection_point or pointed_thing.above
