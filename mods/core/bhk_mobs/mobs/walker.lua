@@ -6,7 +6,12 @@ local RIGHT = vector.new(1, 0, 0)
 local mob_walker = {
 	initial_properties = {
 		textures = {
-			"bhk_fplayer.png^[hsl:20:0:0^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
+			"bhk_fplayer_mech.png" ..
+			"^(bhk_fplayer_fill.png^[multiply:#87c3d8)"..
+			"^(bhk_fplayer_outline.png^[multiply:#e6f6ff)"..
+			"^(bhk_fplayer_accent.png^[multiply:#b9d4ee)"..
+			"^(bhk_fplayer_gun.png^[multiply:#fff7cf)"..
+			"^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
 		},
 		visual = "mesh",
 		mesh = "bhk_fplayer.glb",
@@ -23,6 +28,8 @@ local mob_walker = {
 	_team = 2,
 	_hp = 10,
 	_view_fov = math.pi/2,
+	_turret_move_speed = 3,
+	_move_speed = 2,
 	-- controls
 	_look_pos = nil,
 	_aim_pos = nil,
@@ -33,6 +40,7 @@ local mob_walker = {
 	_parent = nil,
 	_turret_offset = vector.new(0, 54, 0) / 32,
 	_muzzle_offset = vector.new(0, 7, 33) / 32,
+	_last_pos = nil,
 	---@type GunDef|nil
 	_gun = nil,
 	-- animation and bone overrides
@@ -40,7 +48,6 @@ local mob_walker = {
 	_cab_yaw = 0,
 	_turret_yaw = 0,
 	_turret_elevation = 0,
-	_turret_move_speed = 3,
 	-- mob only
 	_has_los = false,
 	_time_since_los = 0,
@@ -55,6 +62,51 @@ local mob_walker = {
 		local moff = vector.rotate_around_axis(self._muzzle_offset, UP, self._turret_yaw)
 		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
 		return pos + mpos
+	end,
+	---@param self mob_walker
+	_rotate_to_movement = function(self, dtime)
+		local last_move_pos = self._last_pos
+		local fpos = self.object:get_pos()
+		local dir = vector.direction(fpos, last_move_pos)
+		if vector.length(dir) < 0.0001 then return end
+		if last_move_pos then
+			local tyaw = core.dir_to_yaw(dir)
+			tyaw = (-tyaw + math.pi)
+			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.09)
+			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.001 then
+				self._cab_yaw = yaw
+				self.object:set_bone_override("hips", {
+					rotation = {
+						vec = vector.new(0, yaw, 0),
+						interpolation = dtime + 0.08,
+						absolute = true,
+					}
+				})
+			end
+		end
+	end,
+	_handle_animations = function(self, dtime)
+		-- change animation speed based on pause
+		if bhk_main.game_pause and not self._paused then
+			self._paused = true
+			self.object:set_velocity(vector.new(0, 0, 0))
+			self.object:set_animation_frame_speed(0.3)
+		elseif (not bhk_main.game_pause) and self._paused then
+			self._paused = false
+			self.object:set_animation_frame_speed(1.4)
+		end
+
+		if self._last_pos and (vector.distance(self.object:get_pos(), self._last_pos) > 0.00001) then
+			if self._anim ~= "walk" then
+				self.object:set_animation({x=40/24, y=79/24}, 1.4, 0.2, true)
+				self._anim = "walk"
+			end
+		else
+			if self._anim ~= "idle" then
+				self.object:set_animation({x=0/24, y=19/24}, 1, 0.2, true)
+				self._anim = "idle"
+			end
+		end
 	end,
 	---@param self mob_walker
 	_aim_at = function(self, dtime, pos)
@@ -141,10 +193,12 @@ local mob_walker = {
 				if dist and (dist > 3) then
 					local target_pos = self._target.object:get_pos()
 					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
-					self.object:set_velocity(dir or vector.new(0, 0, 0))
+					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
+					self:_rotate_to_movement(dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end
+				self:_handle_animations(dtime)
 			end,
 			on_start = function(self, meta)
 			end,
@@ -168,10 +222,12 @@ local mob_walker = {
 				if dist and (dist > 7) then
 					local target_pos = self._target.object:get_pos()
 					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
-					self.object:set_velocity(dir or vector.new(0, 0, 0))
+					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
+					self:_rotate_to_movement(dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end
+				self:_handle_animations(dtime)
 
 				if self._target and self._has_los then
 					self._look_pos = self._target.object:get_pos()
@@ -222,6 +278,7 @@ local mob_walker = {
 		else
 			bhk_main.debug_particle(self._aim_pos, "#f00", 0.2)
 		end
+		self._last_pos = self.object:get_pos()
 	end,
 	on_activate = function(self, staticdata)
 		self._gun = bhk_main.player_gun.new()

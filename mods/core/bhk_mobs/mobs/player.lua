@@ -6,7 +6,12 @@ local RIGHT = vector.new(1, 0, 0)
 local fplayer = {
 	initial_properties = {
 		textures = {
-			"bhk_fplayer.png^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
+			"bhk_fplayer_mech.png" ..
+			"^(bhk_fplayer_fill.png^[multiply:#bab8ab)"..
+			"^(bhk_fplayer_outline.png^[multiply:#d4d2c5)"..
+			"^(bhk_fplayer_accent.png^[multiply:#bab8ab)"..
+			"^(bhk_fplayer_gun.png^[multiply:#d8ae79)"..
+			"^(bhk_meta_overlay_dirt_0.png^[multiply:#112^[opacity:160)",
 		},
 		visual = "mesh",
 		mesh = "bhk_fplayer.glb",
@@ -23,6 +28,8 @@ local fplayer = {
 	_team = 1,
 	_hp = 10,
 	_view_fov = math.pi/2,
+	_turret_move_speed = 3,
+	_move_speed = 1,
 	-- controls
 	_look_pos = nil,
 	_aim_pos = nil,
@@ -40,7 +47,6 @@ local fplayer = {
 	_cab_yaw = 0,
 	_turret_yaw = 0,
 	_turret_elevation = 0,
-	_turret_move_speed = 3,
 
 	_get_muzzle_position = function(self)
 		local pos = self.object:get_pos()
