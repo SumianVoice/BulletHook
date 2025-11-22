@@ -48,6 +48,14 @@ local fplayer = {
 	_turret_yaw = 0,
 	_turret_elevation = 0,
 
+	---@param self fplayer
+	_on_damage = function(self, amount)
+		self._hp = self._hp - amount
+		if self._hp < 0 then
+			self._is_active_character = false
+		end
+	end,
+	---@param self fplayer
 	_get_muzzle_position = function(self)
 		local pos = self.object:get_pos()
 		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
@@ -55,6 +63,7 @@ local fplayer = {
 		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
 		return pos + mpos
 	end,
+	---@param self fplayer
 	_rotate_to_movement = function(self, dtime)
 		local pi = assert(bhk_main.pi(self._parent))
 		local last_move_pos = bhk_main.get_queue_next_pos(self._parent, pi, 1, true, "move")

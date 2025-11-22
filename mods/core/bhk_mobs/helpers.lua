@@ -99,9 +99,18 @@ function bhk_mobs.line_of_sight(self, pos1, pos2)
 	return true
 end
 
+---@param self table
+---@return number|nil
+function bhk_mobs.get_target_dist(self)
+	local tpos = self._target and self._target.object:get_pos()
+	local dist = tpos and vector.distance(tpos, self.object:get_pos())
+	return dist or nil
+end
+
 function bhk_mobs.has_los_to_target(self, target)
 	local pos1 = self.object:get_pos()
 	local pos2 = target.object:get_pos()
+	if (not pos1) or (not pos2) then return false end
 	pos1.y = pos1.y + 1.5
 	pos2.y = pos2.y + 1.5
 	local tyaw = core.dir_to_yaw(vector.direction(pos1, pos2))

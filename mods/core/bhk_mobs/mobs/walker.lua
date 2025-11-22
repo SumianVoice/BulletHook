@@ -56,6 +56,13 @@ local mob_walker = {
 	_target_loss_time = 10,
 
 	---@param self mob_walker
+	_on_damage = function(self, amount)
+		self._hp = self._hp - amount
+		if self._hp <= 0 then
+			self.object:remove()
+		end
+	end,
+	---@param self mob_walker
 	_get_muzzle_position = function(self)
 		local pos = self.object:get_pos()
 		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
@@ -150,6 +157,10 @@ local mob_walker = {
 			on_step = function(self, dtime, meta)
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#555", 0.2)
 				if self._paused then return end
+
+				local dist = bhk_mobs.get_target_dist(self)
+				if not dist then self._target = nil end
+
 				if meta.int_target:on_timer(dtime) then
 					bhk_mobs.get_target(self, nil)
 				end
@@ -173,6 +184,9 @@ local mob_walker = {
 					return
 				end
 
+				local dist = bhk_mobs.get_target_dist(self)
+				if not dist then self._target = nil end
+
 				self:_check_los(dtime)
 
 				if self._has_los then
@@ -187,8 +201,6 @@ local mob_walker = {
 				if (not self._target) and (meta.state_time > self._target_loss_time) then
 					return MFSM.set_state(self, "idle", true, true)
 				end
-
-				local dist = self._target and vector.distance(self._target.object:get_pos(), self.object:get_pos())
 
 				if dist and (dist > 3) then
 					local target_pos = self._target.object:get_pos()
@@ -214,14 +226,17 @@ local mob_walker = {
 					return
 				end
 
+				local dist = bhk_mobs.get_target_dist(self)
+				if not dist then self._target = nil end
+
 				self:_check_los(dtime)
 
 				local fpos = self.object:get_pos()
 
-				local dist = self._target and vector.distance(self._target.object:get_pos(), self.object:get_pos())
-				if dist and (dist > 7) then
-					local target_pos = self._target.object:get_pos()
-					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
+				local tpos = self._target and self._target.object:get_pos()
+
+				if tpos and dist and (dist > 7) then
+					local dir = bhk_mobs.check_get_path_dir(self, tpos, false)
 					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
 					self:_rotate_to_movement(dtime)
 				else
@@ -229,16 +244,16 @@ local mob_walker = {
 				end
 				self:_handle_animations(dtime)
 
-				if self._target and self._has_los then
-					self._look_pos = self._target.object:get_pos()
+				if tpos and self._has_los then
+					self._look_pos = tpos
 					self:_aim_at(dtime, self._look_pos)
 				elseif self._look_pos then
 					self:_aim_at(dtime, self._look_pos)
 				end
 
-				if self._target and self._has_los
-				and (bhk_mobpath.dist2(self._aim_pos, self._target.object:get_pos()) < 0.5^2) then
-					local target_pos = self._target.object:get_pos()
+				if tpos and self._has_los
+				and (bhk_mobpath.dist2(self._aim_pos, tpos) < 0.5^2) then
+					local target_pos = tpos
 					self._gun.pos = self:_get_muzzle_position()
 					self._gun.dir = vector.direction(self._gun.pos, vector.offset(target_pos, 0, 1.5, 0))
 					self._gun:signal_firing()

@@ -128,8 +128,12 @@ bhk_main.player_gun = exord_gunlike.GunDef.new({
 		max_time = 1,
         on_impact_entity = function(self, pointed_thing, is_final_impact)
             local o = pointed_thing.ref
-            if not o then return end
-            do_hit_particles(pointed_thing.intersection_point, -vector.normalize(self.velocity))
+            local e = o and o:get_luaentity()
+            if not e then return end
+            if e._on_damage then
+                e:_on_damage(6)
+                do_hit_particles(pointed_thing.intersection_point, -vector.normalize(self.velocity))
+            end
         end,
 		---@param self BulletDef
 		on_impact_node = function(self, pointed_thing, is_final_impact)
