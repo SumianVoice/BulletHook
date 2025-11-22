@@ -114,7 +114,14 @@ core.register_tool("bhk_main:move_tool", {
 		-- if not bhk_main.game_pause then return end
 		bhk_main.queue_task_move(user, pointed_thing.intersection_point, pi)
 	end,
-	-- on_secondary_use = function(itemstack, user, pointed_thing) end,
+	on_secondary_use = function(itemstack, user, pointed_thing)
+		local pi = bhk_main.pi(user)
+		if not pi then return end
+		pointed_thing = bhk_main.get_pointed_thing(itemstack, user, true)
+		if not pointed_thing then return end
+		-- if not bhk_main.game_pause then return end
+		bhk_main.queue_task_look(user, pointed_thing.intersection_point, pi)
+	end,
 	on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
