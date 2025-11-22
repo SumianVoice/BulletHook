@@ -64,3 +64,7 @@ function bhk_main.get_pointed_thing(itemstack, player, lock_y)
 		end
 	end
 end
+
+function bhk_main.vector_move_toward(v, p, delta)
+	return v + vector.direction(v, p) * math.min(delta, vector.distance(v, p))
+end

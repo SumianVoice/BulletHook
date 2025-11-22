@@ -39,7 +39,7 @@ bhk_main.playerstate_proto = {
 				local pos = player:get_pos()
 				if not pi.fplayer then
 					pos.y = bhk_main.get_game_area_floor() + 0.5
-					local obj = core.add_entity(pos, "bhk_main:fplayer")
+					local obj = core.add_entity(pos, "bhk_mobs:fplayer")
 					pi.fplayer = obj and obj:get_luaentity()
 					if pi.fplayer then
 						pi.fplayer.object:set_observers({[player:get_player_name()] = true})

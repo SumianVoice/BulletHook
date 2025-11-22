@@ -6,3 +6,4 @@ bhk_mobs = {}
 
 dofile(mod_path .. "/helpers.lua")
 dofile(mod_path .. "/mobs" .. "/walker.lua")
+dofile(mod_path .. "/mobs" .. "/player.lua")
