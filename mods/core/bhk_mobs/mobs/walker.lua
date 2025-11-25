@@ -165,7 +165,7 @@ local bhk_mob_walker = {
 
 				bhk_mobs.walker.check_los(self, dtime)
 				bhk_mobs.walker.handle_animations(self, dtime)
-				bhk_mobs.walker.check_fire_gun(self, dtime)
+				-- bhk_mobs.walker.check_fire_gun(self, dtime)
 
 				if (not self._has_los) and (meta.state_time > 1) then
 					return MFSM.set_state(self, "chase", true, true)

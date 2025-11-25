@@ -65,10 +65,10 @@ function bhk_mobs.walker.handle_animations(self, dtime)
 end
 
 ---@param self bhk_walker_base
-function bhk_mobs.walker.aim_at(self, dtime, pos)
+function bhk_mobs.walker.aim_at(self, dtime, pos, speed)
 	local fpos = self.object:get_pos()
 	local spos = self._aim_pos or fpos
-	self._aim_pos = bhk_main.vector_move_toward(spos, pos, dtime * self._turret_move_speed)
+	self._aim_pos = bhk_main.vector_move_toward(spos, pos, dtime * (speed or self._turret_move_speed))
 
 	local dir = vector.direction(fpos, self._aim_pos)
 	local tyaw = core.dir_to_yaw(dir)
@@ -88,9 +88,8 @@ function bhk_mobs.walker.check_fire_gun(self, dtime)
 	local tpos = self._target and self._target.object:get_pos()
 	if tpos and self._has_los and self._aim_pos
 	and (bhk_mobpath.dist2(self._aim_pos, tpos) < 0.5^2) then
-		local target_pos = tpos
 		self._gun.pos = bhk_mobs.walker.get_muzzle_position(self)
-		self._gun.dir = vector.direction(self._gun.pos, vector.offset(target_pos, 0, 1.5, 0))
+		self._gun.dir = vector.direction(self._gun.pos, vector.offset(tpos, 0, 1.5, 0))
 		self._gun:signal_firing()
 	end
 end

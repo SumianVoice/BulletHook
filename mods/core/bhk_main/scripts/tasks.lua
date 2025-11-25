@@ -13,8 +13,9 @@ bhk_main.task_max_time = 5
 ---@return table|nil 
 function bhk_main.get_queue_next_pos(player, pi, i, forward, look_for_type)
 	pi = pi or assert(bhk_main.pi(player))
-	for k = (i or #pi.tasks), 1, (forward and 1 or -1) do
-		local task = pi.tasks[k]
+	if not pi.fplayer then return end
+	for k = (i or #pi.fplayer._tasks), 1, (forward and 1 or -1) do
+		local task = pi.fplayer._tasks[k]
 		if task and task.type == (look_for_type or "move") then
 			return forward and task.start_pos or task.pos
 		end
@@ -59,7 +60,8 @@ end
 
 function bhk_main.queue_task_move(player, pos, pi)
 	pi = pi or assert(bhk_main.pi(player))
-	if #pi.tasks >= bhk_main.task_max_count then return end
+	if not pi.fplayer then return end
+	if #pi.fplayer._tasks >= bhk_main.task_max_count then return end
 	local fplayer = pi.fplayer
 	if not fplayer then return end
 	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
@@ -79,17 +81,18 @@ function bhk_main.queue_task_move(player, pos, pi)
 		ent._parent = player
 	end
 
-	table.insert(pi.tasks, {type = "move", pos = pos, obj = obj, start_pos = start_pos, time = 0, time_total = dist/2})
+	table.insert(fplayer._tasks, {type = "move", pos = pos, obj = obj, start_pos = start_pos, time = 0, time_total = dist/2})
 end
 
 function bhk_main.queue_task_look(player, pos, pi)
 	pi = pi or assert(bhk_main.pi(player))
-	if #pi.tasks >= bhk_main.task_max_count then return end
+	if not pi.fplayer then return end
+	if #pi.fplayer._tasks >= bhk_main.task_max_count then return end
 	local fplayer = assert(pi.fplayer)
 	local start_pos = bhk_main.get_queue_next_pos(player, pi, nil, false, "look") or fplayer._look_pos or fplayer.object:get_pos()
 	local last_move_pos = bhk_main.get_queue_next_pos(player, pi, nil, false) or fplayer.object:get_pos()
 
-	table.insert(pi.tasks, {type = "look", pos = pos, start_pos = start_pos, time = 0, time_total = 1})
+	table.insert(fplayer._tasks, {type = "look", pos = pos, start_pos = start_pos, time = 0, time_total = 1})
 
 	local obj = core.add_entity(last_move_pos, "bhk_main:gui_task_look")
 	local ent = obj and obj:get_luaentity()
@@ -98,7 +101,7 @@ function bhk_main.queue_task_look(player, pos, pi)
 		ent:_set_target(pos)
 		ent._parent = player
 	end
-	pi.tasks[#pi.tasks].obj = obj
+	fplayer._tasks[#fplayer._tasks].obj = obj
 end
 
 core.register_tool("bhk_main:move_tool", {
@@ -142,9 +145,9 @@ core.register_tool("bhk_main:move_undo", {
 	on_place = function(itemstack, user, pointed_thing)
 		local pi = bhk_main.pi(user)
 		if not pi then return end
-		if #pi.tasks < 1 then return end
+		if #pi.fplayer._tasks < 1 then return end
 		-- if not bhk_main.game_pause then return end
-		bhk_main.task_remove(user, pi, #pi.tasks)
+		bhk_main.task_remove(user, pi, #pi.fplayer._tasks)
 	end,
 	range = 100,
 })
@@ -176,8 +179,8 @@ end)
 
 function bhk_main.task_remove(player, pi, i)
 	pi = pi or bhk_main.pi(player)
-	if #pi.tasks < i then return end
-	local task = table.remove(pi.tasks, i)
+	if #pi.fplayer._tasks < i then return end
+	local task = table.remove(pi.fplayer._tasks, i)
 	if task.obj then
 		task.obj:remove()
 	end
@@ -185,7 +188,7 @@ end
 
 function bhk_main.task_update(player, pi, i)
 	pi = pi or bhk_main.pi(player)
-	local task = table.remove(pi.tasks, i)
+	local task = table.remove(pi.fplayer._tasks, i)
 	if not task.obj then return end
 	if task.type == "move" then
 	elseif task.type == "look" then
@@ -198,7 +201,7 @@ function bhk_main.do_tasks(player, dtime, pi)
 	if bhk_main.game_pause then return end
 	-- do return end
 	pi = pi or bhk_main.pi(player)
-	local task = pi.tasks[1]
+	local task = pi.fplayer._tasks[1]
 	if not task then return false end
 	task.time = math.min(task.time_total, math.max(0, task.time + dtime))
 	local f = task.time / task.time_total

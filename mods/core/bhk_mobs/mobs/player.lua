@@ -42,6 +42,7 @@ local fplayer = {
 	_muzzle_offset = vector.new(0, 7, 33) / 32,
 	---@type GunDef|nil
 	_gun = nil,
+	_tasks = {},
 	-- animation and bone overrides
 	_anim = nil,
 	_cab_yaw = 0,
@@ -63,16 +64,14 @@ local fplayer = {
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
-		local fpos = self.object:get_pos()
 		local pi = assert(bhk_main.pi(self._parent))
-		local last_look_pos = self._look_pos
 
 		bhk_mobs.walker.handle_pause(self, dtime)
-
 		-- don't do anything more if paused
 		if self._paused then
 			return
 		end
+		self._gun:_on_step(dtime)
 
 		if self._int_target:on_timer(dtime) then
 			bhk_mobs.get_target(self, nil)
@@ -80,37 +79,15 @@ local fplayer = {
 
 		bhk_mobs.walker.check_los(self, dtime)
 		bhk_mobs.walker.handle_animations(self, dtime)
-		bhk_mobs.walker.check_fire_gun(self, dtime)
-
-		bhk_mobs.walker.handle_default_on_step(self, dtime)
 		bhk_mobs.walker.rotate_to_movement(self, dtime)
 
-		if self._target then
-			local spos = self._aim_pos or last_look_pos or fpos
-			self._aim_pos = bhk_main.vector_move_toward(
-				spos, self._target.object:get_pos(),
-				dtime * self._turret_move_speed
-			)
+		local tpos = self._target and self._target.object:get_pos()
+		if tpos then
+			bhk_mobs.walker.aim_at(self, dtime, tpos, 5)
+			bhk_mobs.walker.check_fire_gun(self, dtime)
 			bhk_main.debug_particle(self._aim_pos, "#f0f", 0.2)
-		else
-			if last_look_pos then
-				local spos = self._aim_pos or last_look_pos or fpos
-				self._aim_pos = bhk_main.vector_move_toward(
-					spos, last_look_pos,
-					dtime * self._turret_move_speed
-				)
-				local tyaw = core.dir_to_yaw(vector.direction(fpos, last_look_pos))
-				local yaw = bhk_main.angle_difference(self._turret_yaw or 0, tyaw)
-				local amount = math.min(dtime * math.pi, math.abs(yaw))
-				self._turret_yaw = ((self._turret_yaw or 0) + math.sign(yaw) * amount) % (math.pi*2)
-				self.object:set_bone_override("turret", {
-					rotation = {
-						vec = vector.new(0, -self._turret_yaw, 0),
-						interpolation = 0.1,
-						absolute = true,
-					}
-				})
-			end
+		elseif self._look_pos then
+			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
 		end
 		if self._turret_yaw and pi.fow_blocker then
 			pi.fow_blocker._look_yaw = self._turret_yaw
@@ -119,8 +96,9 @@ local fplayer = {
 	end,
 	on_activate = function(self, staticdata)
 		self._gun = bhk_main.player_gun.new()
-		self._int_los = bhk_main.InTimer.new(0.3)
-		self._int_target = bhk_main.InTimer.new(0.3)
+		self._int_los = bhk_main.InTimer.new(0.1)
+		self._int_target = bhk_main.InTimer.new(0.1)
+		self._tasks = {}
 	end,
 }
 core.register_entity("bhk_mobs:fplayer", fplayer)
