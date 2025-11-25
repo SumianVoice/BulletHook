@@ -68,3 +68,6 @@ end
 function bhk_main.vector_move_toward(v, p, delta)
 	return v + vector.direction(v, p) * math.min(delta, vector.distance(v, p))
 end
+
+function bhk_main.get_and_follow_path(self)
+end

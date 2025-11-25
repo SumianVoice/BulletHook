@@ -5,5 +5,6 @@ local S = core.get_translator(mod_name)
 bhk_mobs = {}
 
 dofile(mod_path .. "/helpers.lua")
+dofile(mod_path .. "/mobs" .. "/shared.lua")
 dofile(mod_path .. "/mobs" .. "/walker.lua")
 dofile(mod_path .. "/mobs" .. "/player.lua")

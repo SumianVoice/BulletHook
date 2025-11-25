@@ -2,7 +2,7 @@
 local UP = vector.new(0, 1, 0)
 local RIGHT = vector.new(1, 0, 0)
 
----@class fplayer
+---@class fplayer:bhk_walker_base
 local fplayer = {
 	initial_properties = {
 		textures = {
@@ -64,27 +64,6 @@ local fplayer = {
 		return pos + mpos
 	end,
 	---@param self fplayer
-	_rotate_to_movement = function(self, dtime)
-		local pi = assert(bhk_main.pi(self._parent))
-		local last_move_pos = bhk_main.get_queue_next_pos(self._parent, pi, 1, true, "move")
-		local fpos = self.object:get_pos()
-		if last_move_pos then
-			local tyaw = core.dir_to_yaw(vector.direction(fpos, last_move_pos))
-			tyaw = (-tyaw + math.pi)
-			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.09)
-			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.001 then
-				self._cab_yaw = yaw
-				self.object:set_bone_override("hips", {
-					rotation = {
-						vec = vector.new(0, yaw, 0),
-						interpolation = dtime + 0.08,
-						absolute = true,
-					}
-				})
-			end
-		end
-	end,
-	---@param self fplayer
 	---@param dtime number
 	---@param moveresult table|nil
 	---@return any
@@ -96,39 +75,19 @@ local fplayer = {
 		local pi = assert(bhk_main.pi(self._parent))
 		local last_look_pos = self._look_pos
 
-		if not self._gun then self._gun = bhk_main.player_gun.new() end
-		self._gun:_on_step(dtime)
-
-		-- change animation speed based on pause
-		if bhk_main.game_pause and not self._paused then
-			self._paused = true
-			self.object:set_velocity(vector.new(0, 0, 0))
-			self.object:set_animation_frame_speed(0.3)
-		elseif (not bhk_main.game_pause) and self._paused then
-			self._paused = false
-			self.object:set_animation_frame_speed(1.4)
-		end
+		bhk_mobs.walker.handle_pause(self, dtime)
 
 		-- don't do anything more if paused
 		if self._paused then
 			return
 		end
 
-		self:_rotate_to_movement(dtime)
+		bhk_mobs.walker.check_los(self, dtime)
+		bhk_mobs.walker.handle_animations(self, dtime)
+		bhk_mobs.walker.check_fire_gun(self, dtime)
 
-		-- handle animations
-		local task = pi.tasks[1]
-		if (task and task.type == "move") then
-			if self._anim ~= "walk" then
-				self.object:set_animation({x=40/24, y=79/24}, 1.4, 0.2, true)
-				self._anim = "walk"
-			end
-		else
-			if self._anim ~= "idle" then
-				self.object:set_animation({x=0/24, y=19/24}, 1, 0.2, true)
-				self._anim = "idle"
-			end
-		end
+		bhk_mobs.walker.handle_default_on_step(self, dtime)
+		bhk_mobs.walker.rotate_to_movement(self, dtime)
 
 		if self._target then
 			local spos = self._aim_pos or last_look_pos or fpos
@@ -160,8 +119,11 @@ local fplayer = {
 		if self._turret_yaw and pi.fow_blocker then
 			pi.fow_blocker._look_yaw = self._turret_yaw
 		end
+		self._last_pos = self.object:get_pos()
 	end,
 	on_activate = function(self, staticdata)
+		self._gun = bhk_main.player_gun.new()
+		self._int_los = bhk_main.InTimer.new(0.3)
 	end,
 }
 core.register_entity("bhk_mobs:fplayer", fplayer)
