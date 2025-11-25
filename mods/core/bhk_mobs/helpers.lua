@@ -15,6 +15,7 @@ bhk_mobs.pathfinding_options = bhk_mobpath.Options.new({
 			vector.offset(p2,  0, 1, 0),
 			"group:solid"
 		)
+		if nodes and (#nodes >= 1) then return false end
 		return true
 	end,
 	max_search = 300,
