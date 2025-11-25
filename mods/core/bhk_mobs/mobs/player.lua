@@ -56,14 +56,6 @@ local fplayer = {
 		end
 	end,
 	---@param self fplayer
-	_get_muzzle_position = function(self)
-		local pos = self.object:get_pos()
-		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
-		local moff = vector.rotate_around_axis(self._muzzle_offset, UP, self._turret_yaw)
-		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
-		return pos + mpos
-	end,
-	---@param self fplayer
 	---@param dtime number
 	---@param moveresult table|nil
 	---@return any

@@ -62,36 +62,6 @@ local bhk_mob_walker = {
 			self.object:remove()
 		end
 	end,
-	---@param self bhk_mob_walker
-	_get_muzzle_position = function(self)
-		local pos = self.object:get_pos()
-		local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
-		local moff = vector.rotate_around_axis(self._muzzle_offset, UP, self._turret_yaw)
-		local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
-		return pos + mpos
-	end,
-	---@param self bhk_mob_walker
-	_rotate_to_movement = function(self, dtime)
-		local last_move_pos = self._last_pos
-		local fpos = self.object:get_pos()
-		local dir = vector.direction(fpos, last_move_pos)
-		if vector.length(dir) < 0.0001 then return end
-		if last_move_pos then
-			local tyaw = core.dir_to_yaw(dir)
-			tyaw = (-tyaw + math.pi)
-			local yaw = bhk_main.angle_lerp(self._cab_yaw or 0, tyaw, 0.09)
-			if math.abs(bhk_main.angle_difference(self._cab_yaw or 0, yaw)) > 0.001 then
-				self._cab_yaw = yaw
-				self.object:set_bone_override("hips", {
-					rotation = {
-						vec = vector.new(0, yaw, 0),
-						interpolation = dtime + 0.08,
-						absolute = true,
-					}
-				})
-			end
-		end
-	end,
 	_MFSM_name = "walker",
 	_MFSM_states = {
 		{name = "idle",
@@ -148,7 +118,7 @@ local bhk_mob_walker = {
 					local target_pos = self._target.object:get_pos()
 					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
 					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
-					self:_rotate_to_movement(dtime)
+					bhk_mobs.walker.rotate_to_movement(self, dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end
@@ -181,7 +151,7 @@ local bhk_mob_walker = {
 				if tpos and dist and (dist > 7) then
 					local dir = bhk_mobs.check_get_path_dir(self, tpos, false)
 					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
-					self:_rotate_to_movement(dtime)
+					bhk_mobs.walker.rotate_to_movement(self, dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end

@@ -89,7 +89,7 @@ function bhk_mobs.walker.check_fire_gun(self, dtime)
 	if tpos and self._has_los and self._aim_pos
 	and (bhk_mobpath.dist2(self._aim_pos, tpos) < 0.5^2) then
 		local target_pos = tpos
-		self._gun.pos = self:_get_muzzle_position()
+		self._gun.pos = bhk_mobs.walker.get_muzzle_position(self)
 		self._gun.dir = vector.direction(self._gun.pos, vector.offset(target_pos, 0, 1.5, 0))
 		self._gun:signal_firing()
 	end
@@ -132,4 +132,13 @@ function bhk_mobs.walker.rotate_to_movement(self, dtime)
 			}
 		})
 	end
+end
+
+---@param self bhk_walker_base
+function bhk_mobs.walker.get_muzzle_position(self)
+	local pos = self.object:get_pos()
+	local tpos = vector.rotate_around_axis(self._turret_offset, UP, self._turret_yaw)
+	local moff = vector.rotate_around_axis(self._muzzle_offset, UP, self._turret_yaw)
+	local mpos = tpos + vector.rotate_around_axis(moff, RIGHT, self._turret_elevation)
+	return pos + mpos
 end
