@@ -66,6 +66,7 @@ end
 
 ---@param self bhk_walker_base
 function bhk_mobs.walker.aim_at(self, dtime, pos, speed)
+	bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 6, 0), "#0ff", 0.2)
 	local fpos = self.object:get_pos()
 	local spos = self._aim_pos or fpos
 	self._aim_pos = bhk_main.vector_move_toward(spos, pos, dtime * (speed or self._turret_move_speed))

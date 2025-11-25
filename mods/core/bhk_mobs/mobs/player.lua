@@ -87,11 +87,12 @@ local fplayer = {
 
 		local tpos = self._target and self._target.object:get_pos()
 		if tpos and self._has_los then
-			self._look_pos = tpos
-			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 5)
+			bhk_mobs.walker.aim_at(self, dtime, tpos, 15)
+			bhk_main.debug_particle(self._aim_pos, "#f00", 0.2)
 			bhk_mobs.walker.check_fire_gun(self, dtime)
 		elseif self._look_pos then
 			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+			bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
 		end
 
 		if self._turret_yaw and pi.fow_blocker then

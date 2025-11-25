@@ -79,6 +79,9 @@ local bhk_mob_walker = {
 				if self._target then
 					return MFSM.set_state(self, "attack", true, true)
 				end
+				if self._look_pos then
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+				end
 			end,
 			on_start = function(self, meta)
 				self.object:set_velocity(vector.new(0, 0, 0))
@@ -95,10 +98,18 @@ local bhk_mob_walker = {
 					return
 				end
 
-				local dist = bhk_mobs.get_target_dist(self)
-				if not dist then self._target = nil end
-
 				bhk_mobs.walker.check_los(self, dtime)
+
+				local tpos = self._target and self._target.object:get_pos()
+				if tpos then
+					self._look_pos = tpos
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 12)
+					bhk_mobs.walker.check_fire_gun(self, dtime)
+					bhk_main.debug_particle(self._aim_pos, "#f00", 0.2)
+				elseif self._look_pos then
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
+				end
 
 				if self._has_los then
 					return MFSM.set_state(self, "attack", true, true)
@@ -112,6 +123,9 @@ local bhk_mob_walker = {
 				if (not self._target) and (meta.state_time > self._target_loss_time) then
 					return MFSM.set_state(self, "idle", true, true)
 				end
+
+				local dist = bhk_mobs.get_target_dist(self)
+				if not dist then self._target = nil end
 
 				if dist and (dist > 3) then
 					local target_pos = self._target.object:get_pos()
@@ -158,14 +172,16 @@ local bhk_mob_walker = {
 
 				if tpos and self._has_los then
 					self._look_pos = tpos
-					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 5)
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 12)
+					bhk_mobs.walker.check_fire_gun(self, dtime)
+					bhk_main.debug_particle(self._aim_pos, "#f00", 0.2)
 				elseif self._look_pos then
 					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
 				end
 
 				bhk_mobs.walker.check_los(self, dtime)
 				bhk_mobs.walker.handle_animations(self, dtime)
-				bhk_mobs.walker.check_fire_gun(self, dtime)
 
 				if (not self._has_los) and (meta.state_time > 1) then
 					return MFSM.set_state(self, "chase", true, true)
@@ -190,6 +206,11 @@ local bhk_mob_walker = {
 		end
 
 		MFSM.on_step(self, dtime)
+
+		if self._aim_pos then
+			bhk_main.debug_particle(vector.offset(self._aim_pos, 0, 0, 0), "#f0f", 0.2)
+			bhk_main.debug_particle(vector.offset(self._aim_pos, 0, 5, 0), "#f0f", 0.2)
+		end
 
 		if self._target then
 			bhk_main.debug_particle(self._aim_pos, "#0f0", 0.2)
