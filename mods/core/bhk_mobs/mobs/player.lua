@@ -73,6 +73,10 @@ local fplayer = {
 		end
 		self._gun:_on_step(dtime)
 
+		if self._target and not self._target.object:get_pos() then
+			self._target = nil
+		end
+
 		if self._int_target:on_timer(dtime) then
 			bhk_mobs.get_target(self, nil)
 		end
@@ -82,13 +86,14 @@ local fplayer = {
 		bhk_mobs.walker.rotate_to_movement(self, dtime)
 
 		local tpos = self._target and self._target.object:get_pos()
-		if tpos then
-			bhk_mobs.walker.aim_at(self, dtime, tpos, 5)
+		if tpos and self._has_los then
+			self._look_pos = tpos
+			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 5)
 			bhk_mobs.walker.check_fire_gun(self, dtime)
-			bhk_main.debug_particle(self._aim_pos, "#f0f", 0.2)
 		elseif self._look_pos then
 			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
 		end
+
 		if self._turret_yaw and pi.fow_blocker then
 			pi.fow_blocker._look_yaw = self._turret_yaw
 		end

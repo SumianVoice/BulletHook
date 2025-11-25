@@ -137,6 +137,7 @@ local bhk_mob_walker = {
 
 				if self._paused then
 					self.object:set_velocity(vector.new(0, 0, 0))
+					core.log("paused")
 					return
 				end
 
@@ -155,17 +156,16 @@ local bhk_mob_walker = {
 					self.object:set_velocity(vector.new(0, 0, 0))
 				end
 
-
 				if tpos and self._has_los then
 					self._look_pos = tpos
-					bhk_mobs.walker.aim_at(self, dtime, self._look_pos)
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 5)
 				elseif self._look_pos then
-					bhk_mobs.walker.aim_at(self, dtime, self._look_pos)
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
 				end
 
 				bhk_mobs.walker.check_los(self, dtime)
 				bhk_mobs.walker.handle_animations(self, dtime)
-				-- bhk_mobs.walker.check_fire_gun(self, dtime)
+				bhk_mobs.walker.check_fire_gun(self, dtime)
 
 				if (not self._has_los) and (meta.state_time > 1) then
 					return MFSM.set_state(self, "chase", true, true)

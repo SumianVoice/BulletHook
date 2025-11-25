@@ -103,6 +103,24 @@ core.register_globalstep(function(dtime)
 	end
 end)
 
+local function try_spawn(pos)
+	local node = core.get_node(pos)
+	if core.get_item_group(node.name, "full_solid") > 0 then return false end
+	node = core.get_node(vector.offset(pos, 0, -1, 0))
+	if core.get_item_group(node.name, "full_solid") <= 0 then return false end
+	local obj = core.add_entity(pos, "bhk_mobs:walker")
+	local ent = obj and obj:get_luaentity()
+	if ent then
+		ent._team = 2
+	end
+	ent._look_pos = pos + vector.new(
+		math.random(-2, 2), 0,
+		math.random(-2, 2)
+	)
+	ent._aim_pos = ent._look_pos
+	return true
+end
+
 bhk_main.state = MFSM.new({
 	_MFSM_states = {
         {name = "mapgen",
@@ -135,11 +153,14 @@ bhk_main.state = MFSM.new({
 					pi.MFSM:set_state("start", true, true)
 				end
 
-				local pos = bhk_main.gamearea_min + vector.new(5, 0.51, 5)
-				local obj = core.add_entity(pos, "bhk_mobs:walker")
-				local ent = obj and obj:get_luaentity()
-				if ent then
-					ent._team = 2
+				core.log(tostring(try_spawn(vector.new(-35, bhk_main.get_game_area_floor() + 0.51, -40))))
+				for i = 1, 20 do
+					local pos = vector.new(
+						math.random(bhk_main.gamearea_min.x, bhk_main.gamearea_max.x),
+						bhk_main.get_game_area_floor() + 0.51,
+						math.random(bhk_main.gamearea_min.x, bhk_main.gamearea_max.x)
+					)
+					try_spawn(pos)
 				end
             end,
             protected = false,

@@ -234,6 +234,7 @@ function bhk_main.do_tasks(player, dtime, pi)
 	elseif task.type == "look" then
 		local pos = (task.pos * f) + (task.start_pos * (1-f))
 		pi.fplayer._look_pos = pos
+		pi.fplayer._aim_pos = pos
 		bhk_main.debug_particle(pos, "#fff", 0.2)
 	end
 
