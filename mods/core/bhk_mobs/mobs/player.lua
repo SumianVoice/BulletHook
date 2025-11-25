@@ -74,6 +74,10 @@ local fplayer = {
 			return
 		end
 
+		if self._int_target:on_timer(dtime) then
+			bhk_mobs.get_target(self, nil)
+		end
+
 		bhk_mobs.walker.check_los(self, dtime)
 		bhk_mobs.walker.handle_animations(self, dtime)
 		bhk_mobs.walker.check_fire_gun(self, dtime)
@@ -116,6 +120,7 @@ local fplayer = {
 	on_activate = function(self, staticdata)
 		self._gun = bhk_main.player_gun.new()
 		self._int_los = bhk_main.InTimer.new(0.3)
+		self._int_target = bhk_main.InTimer.new(0.3)
 	end,
 }
 core.register_entity("bhk_mobs:fplayer", fplayer)

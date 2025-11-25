@@ -73,7 +73,7 @@ local bhk_mob_walker = {
 				local dist = bhk_mobs.get_target_dist(self)
 				if not dist then self._target = nil end
 
-				if meta.int_target:on_timer(dtime) then
+				if self._int_target:on_timer(dtime) then
 					bhk_mobs.get_target(self, nil)
 				end
 				if self._target then
@@ -81,7 +81,6 @@ local bhk_mob_walker = {
 				end
 			end,
 			on_start = function(self, meta)
-				meta.int_target = bhk_main.InTimer.new(1)
 				self.object:set_velocity(vector.new(0, 0, 0))
 			end,
 			on_end = function(self, meta)
@@ -202,6 +201,7 @@ local bhk_mob_walker = {
 	on_activate = function(self, staticdata)
 		self._gun = bhk_main.player_gun.new()
 		self._int_los = bhk_main.InTimer.new(0.3)
+		self._int_target = bhk_main.InTimer.new(0.3)
 		MFSM.set_state(self, "idle", true, true)
 	end,
 }
