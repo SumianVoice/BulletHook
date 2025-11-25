@@ -100,6 +100,15 @@ local bhk_mob_walker = {
 
 				bhk_mobs.walker.check_los(self, dtime)
 
+				if self._has_los then
+					return MFSM.set_state(self, "attack", true, true)
+				else
+					self._time_since_los = self._time_since_los + dtime
+				end
+				if self._time_since_los > 3 then
+					self._target = nil
+				end
+
 				local tpos = self._target and self._target.object:get_pos()
 				if tpos then
 					self._look_pos = tpos
@@ -111,26 +120,16 @@ local bhk_mob_walker = {
 					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
 				end
 
-				if self._has_los then
-					return MFSM.set_state(self, "attack", true, true)
-				else
-					self._time_since_los = self._time_since_los + dtime
-				end
-				if self._time_since_los > 3 then
-					self._target = nil
-				end
-
-				if (not self._target) and (meta.state_time > self._target_loss_time) then
+				if (not tpos) and (meta.state_time > self._target_loss_time) then
 					return MFSM.set_state(self, "idle", true, true)
 				end
 
 				local dist = bhk_mobs.get_target_dist(self)
 				if not dist then self._target = nil end
 
-				if dist and (dist > 3) then
-					local target_pos = self._target.object:get_pos()
-					local dir = bhk_mobs.check_get_path_dir(self, target_pos, false)
-					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
+				if tpos and dist and (dist > 3) then
+					local step_pos = bhk_mobs.vector_move_toward(self.object:get_pos(), tpos, dtime * self._move_speed)
+					self.object:move_to(step_pos)
 					bhk_mobs.walker.rotate_to_movement(self, dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))
@@ -163,8 +162,8 @@ local bhk_mob_walker = {
 				local tpos = self._target and self._target.object:get_pos()
 
 				if tpos and dist and (dist > 7) then
-					local dir = bhk_mobs.check_get_path_dir(self, tpos, false)
-					self.object:set_velocity((dir or vector.new(0, 0, 0)) * self._move_speed)
+					local step_pos = bhk_mobs.vector_move_toward(self.object:get_pos(), tpos, dtime * self._move_speed)
+					self.object:move_to(step_pos)
 					bhk_mobs.walker.rotate_to_movement(self, dtime)
 				else
 					self.object:set_velocity(vector.new(0, 0, 0))

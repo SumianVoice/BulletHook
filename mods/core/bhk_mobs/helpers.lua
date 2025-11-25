@@ -114,7 +114,9 @@ function bhk_mobs.has_los_to_target(self, target)
 	if (not pos1) or (not pos2) then return false end
 	pos1.y = pos1.y + 1.5
 	pos2.y = pos2.y + 1.5
-	local tyaw = core.dir_to_yaw(vector.direction(pos1, pos2))
+	local tdir = vector.direction(pos1, pos2)
+	pos2 = pos2 + tdir
+	local tyaw = core.dir_to_yaw(tdir)
 	if math.abs(bhk_main.angle_difference((self._turret_yaw or 0), tyaw)) > (self._view_fov / 2) then
 		return false
 	end
