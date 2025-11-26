@@ -114,6 +114,26 @@ end
 function bhk_mobs.walker.handle_default_on_step(self, dtime)
 end
 
+---@param self bhk_walker_base
+function bhk_mobs.walker.chase_target(self, dtime)
+	local fpos = self.object:get_pos()
+	local tpos = self._target and self._target.object:get_pos()
+	local dist = tpos and bhk_mobs.get_target_dist(self)
+	if not dist then self._target = nil; return end
+	if not tpos then return end
+	if (self._has_los and (dist > 7))
+	or ((not self._has_los) and (dist > 3)) then
+		local dir = bhk_mobs.check_get_path_dir(self, tpos, false)
+		if not dir then return end
+		local path_pos = self._path and self._path[#self._path]
+		if not path_pos then
+			path_pos = fpos + (dir * self._move_speed)
+		end
+		local step_pos = bhk_mobs.vector_move_toward(fpos, path_pos, dtime * self._move_speed)
+		self.object:move_to(step_pos)
+		bhk_mobs.walker.rotate_to_movement(self, dtime)
+	end
+end
 
 ---@param self bhk_walker_base
 function bhk_mobs.walker.rotate_to_movement(self, dtime)

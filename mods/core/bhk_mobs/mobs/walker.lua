@@ -84,7 +84,6 @@ local bhk_mob_walker = {
 				end
 			end,
 			on_start = function(self, meta)
-				self.object:set_velocity(vector.new(0, 0, 0))
 			end,
 			on_end = function(self, meta)
 			end,
@@ -92,9 +91,9 @@ local bhk_mob_walker = {
 		{name = "chase",
 			---@param self bhk_mob_walker
 			on_step = function(self, dtime, meta)
+				local fpos = self.object:get_pos()
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#00f", 0.2)
 				if self._paused then
-					self.object:set_velocity(vector.new(0, 0, 0))
 					return
 				end
 
@@ -124,16 +123,8 @@ local bhk_mob_walker = {
 					return MFSM.set_state(self, "idle", true, true)
 				end
 
-				local dist = bhk_mobs.get_target_dist(self)
-				if not dist then self._target = nil end
+				bhk_mobs.walker.chase_target(self, dtime)
 
-				if tpos and dist and (dist > 3) then
-					local step_pos = bhk_mobs.vector_move_toward(self.object:get_pos(), tpos, dtime * self._move_speed)
-					self.object:move_to(step_pos)
-					bhk_mobs.walker.rotate_to_movement(self, dtime)
-				else
-					self.object:set_velocity(vector.new(0, 0, 0))
-				end
 				bhk_mobs.walker.handle_animations(self, dtime)
 			end,
 			on_start = function(self, meta)
@@ -144,31 +135,19 @@ local bhk_mob_walker = {
 		{name = "attack",
 			---@param self bhk_mob_walker
 			on_step = function(self, dtime, meta)
-				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#f00", 0.2)
+				local fpos = self.object:get_pos()
+				bhk_main.debug_particle(vector.offset(fpos, 0, 3, 0), "#f00", 0.2)
 
 				bhk_mobs.walker.handle_pause(self, dtime)
 
 				if self._paused then
-					self.object:set_velocity(vector.new(0, 0, 0))
-					core.log("paused")
 					return
 				end
 
 				local dist = bhk_mobs.get_target_dist(self)
 				if not dist then self._target = nil end
 
-				local fpos = self.object:get_pos()
-
 				local tpos = self._target and self._target.object:get_pos()
-
-				if tpos and dist and (dist > 7) then
-					local step_pos = bhk_mobs.vector_move_toward(self.object:get_pos(), tpos, dtime * self._move_speed)
-					self.object:move_to(step_pos)
-					bhk_mobs.walker.rotate_to_movement(self, dtime)
-				else
-					self.object:set_velocity(vector.new(0, 0, 0))
-				end
-
 				if tpos and self._has_los then
 					self._look_pos = tpos
 					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 12)
@@ -185,6 +164,8 @@ local bhk_mob_walker = {
 				if (not self._has_los) and (meta.state_time > 1) then
 					return MFSM.set_state(self, "chase", true, true)
 				end
+
+				bhk_mobs.walker.chase_target(self, dtime)
 			end,
 			on_start = function(self, meta)
 			end,
