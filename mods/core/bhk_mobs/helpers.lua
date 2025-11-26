@@ -4,7 +4,6 @@ local ZERO = vector.new(0,0,0)
 
 bhk_mobs.pathfinding_options = bhk_mobpath.Options.new({
 	TRAVERSAL = function(p1, p2)
-		core.log("hit")
 		local p = vector.copy(p2)
 		p.y = p.y - 1
 		local n = core.get_node(p)
@@ -68,8 +67,8 @@ function bhk_mobs.check_get_path_dir(self, target_pos, force)
 			vector.round(pos), vector.round(target_pos),
 			setmetatable({}, bhk_mobs.__options_meta)
 		)
-		if (#self._path <= 0) then
-			-- core.log("NO PATH")
+		if (#self._path > 0) then
+			table.remove(self._path, 1)
 		end
 		for i, p in ipairs(self._path) do
 			bhk_main.debug_particle(p, "#f00", 5, UP*5, 2)
@@ -79,9 +78,11 @@ function bhk_mobs.check_get_path_dir(self, target_pos, force)
 
 	if self._path and (#self._path > 0) then
 		local next_point_in_path = self._path[#self._path]
+		next_point_in_path.y = pos.y
 		local dir = vector.direction(pos, next_point_in_path)
 		local d2 = bhk_mobpath.dist2(pos, next_point_in_path)
-		if d2 < 0.5 then
+		if d2 < 0.2 then
+			bhk_main.debug_particle(next_point_in_path, "#f0f", 5, UP*5, 6)
 			table.remove(self._path, #self._path)
 		end
 		return dir

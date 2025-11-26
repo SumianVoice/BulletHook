@@ -67,6 +67,7 @@ local bhk_mob_walker = {
 		{name = "idle",
 			---@param self bhk_mob_walker
 			on_step = function(self, dtime, meta)
+				local fpos = self.object:get_pos()
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#555", 0.2)
 				if self._paused then return end
 
@@ -74,19 +75,32 @@ local bhk_mob_walker = {
 					self._target = nil
 				end
 
+				bhk_mobs.walker.handle_animations(self, dtime)
+
 				if self._int_target:on_timer(dtime) then
 					bhk_mobs.get_target(self, nil)
 					if self._target then return MFSM.set_state(self, "attack", true, true) end
 				end
+
+				if meta.int_look:on_timer(dtime) then
+					meta.int_look.interval = math.random()*4 + 1
+					self._look_pos = fpos + vector.new(
+						math.random(-10, 10), 0,
+						math.random(-10, 10)
+					)
+				end
 				if self._look_pos then
-					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 20)
 				end
 
-				if (meta.state_time > 5) and not self._target then
+				if (meta.state_time > meta.roam_time) and not self._target then
 					return MFSM.set_state(self, "roam", true, true)
 				end
 			end,
 			on_start = function(self, meta)
+				self._path = nil
+				meta.roam_time = math.random() * 20
+				meta.int_look = bhk_main.InTimer.new(math.random()*4 + 1)
 			end,
 			on_end = function(self, meta)
 			end,
@@ -94,6 +108,7 @@ local bhk_mob_walker = {
 		{name = "roam",
 			---@param self bhk_mob_walker
 			on_step = function(self, dtime, meta)
+				local fpos = self.object:get_pos()
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#9f0", 0.2)
 				if self._paused then return end
 
@@ -103,12 +118,22 @@ local bhk_mob_walker = {
 						return MFSM.set_state(self, "attack", true, true)
 					end
 				end
+
+				if meta.int_look:on_timer(dtime) then
+					meta.int_look.interval = math.random()*4 + 1
+					self._look_pos = fpos + vector.new(
+						math.random(-10, 10), 0,
+						math.random(-10, 10)
+					)
+				end
+
 				if self._look_pos then
-					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 20)
 					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
 				end
 
 				bhk_mobs.walker.move_toward(self, dtime, meta._move_target)
+				bhk_mobs.walker.handle_animations(self, dtime)
 
 				if (not self._path) or (#self._path <= 0) or meta.state_time > 10 then
 					return MFSM.set_state(self, "idle", true, true)
@@ -119,11 +144,19 @@ local bhk_mob_walker = {
 					math.random(-20, 20), 0,
 					math.random(-20, 20)
 				)
+				local f = 0.1
+				local p = (bhk_main.gamearea_min + bhk_main.gamearea_max) / 2
+				while not bhk_main.is_point_inside_game_area(meta._move_target) do
+					meta._move_target = (meta._move_target * (1-f)) + (p * f)
+				end
+				meta._move_target = (meta._move_target * (1-f)) + (p * f)
+
 				self._look_pos = meta._move_target + vector.new(
 					math.random(-10, 10), 0,
 					math.random(-10, 10)
 				)
 				self._path = nil
+				meta.int_look = bhk_main.InTimer.new(math.random()*4 + 1)
 			end,
 			on_end = function(self, meta)
 			end,
