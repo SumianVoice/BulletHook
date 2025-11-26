@@ -127,6 +127,9 @@ function bhk_mobs.has_los_to_target(self, target)
 		if pt.type == "node" and core.get_item_group(core.get_node(pt.under), "solid") then
 			return false
 		end
+		if pt.ref == target.object then
+			return true
+		end
 	end
 	return true
 end

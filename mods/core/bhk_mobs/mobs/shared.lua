@@ -51,7 +51,7 @@ end
 
 ---@param self bhk_walker_base
 function bhk_mobs.walker.handle_animations(self, dtime)
-	if self._last_pos and (vector.distance(self.object:get_pos(), self._last_pos) > 0.00001) then
+	if self._last_pos and (vector.distance(self.object:get_pos(), self._last_pos) > 0.0000001) then
 		if self._anim ~= "walk" then
 			self.object:set_animation({x=40/24, y=79/24}, 1.4, 0.2, true)
 			self._anim = "walk"

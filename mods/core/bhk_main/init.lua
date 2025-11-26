@@ -36,7 +36,7 @@ bhk_main.mg_name = core.get_mapgen_setting("mg_name") or "singlenode"
 bhk_main.dev_mode = (bhk_main.mg_name == "flat") or core.is_creative_enabled()
 
 function bhk_main.debug_particle(pos, color, time, vel, size)
-    -- do return end -- for debug purposes
+    do return end -- for debug purposes
     core.add_particle({
         size = size or 2,
         pos = pos,

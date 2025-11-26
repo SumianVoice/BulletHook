@@ -110,7 +110,11 @@ local bhk_mob_walker = {
 			on_step = function(self, dtime, meta)
 				local fpos = self.object:get_pos()
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#9f0", 0.2)
-				if self._paused then return end
+				if self._paused then
+					return
+				end
+
+				bhk_mobs.walker.handle_animations(self, dtime)
 
 				if self._int_target:on_timer(dtime) then
 					bhk_mobs.get_target(self, nil)
@@ -133,7 +137,6 @@ local bhk_mob_walker = {
 				end
 
 				bhk_mobs.walker.move_toward(self, dtime, meta._move_target)
-				bhk_mobs.walker.handle_animations(self, dtime)
 
 				if (not self._path) or (#self._path <= 0) or meta.state_time > 10 then
 					return MFSM.set_state(self, "idle", true, true)
@@ -171,6 +174,7 @@ local bhk_mob_walker = {
 				end
 
 				bhk_mobs.walker.check_los(self, dtime)
+				bhk_mobs.walker.handle_animations(self, dtime)
 
 				if self._has_los then
 					return MFSM.set_state(self, "attack", true, true)
@@ -197,8 +201,6 @@ local bhk_mob_walker = {
 				end
 
 				bhk_mobs.walker.chase_target(self, dtime)
-
-				bhk_mobs.walker.handle_animations(self, dtime)
 			end,
 			on_start = function(self, meta)
 			end,
@@ -211,11 +213,12 @@ local bhk_mob_walker = {
 				local fpos = self.object:get_pos()
 				bhk_main.debug_particle(vector.offset(fpos, 0, 3, 0), "#f00", 0.2)
 
-				bhk_mobs.walker.handle_pause(self, dtime)
-
 				if self._paused then
 					return
 				end
+
+				bhk_mobs.walker.check_los(self, dtime)
+				bhk_mobs.walker.handle_animations(self, dtime)
 
 				local dist = bhk_mobs.get_target_dist(self)
 				if not dist then self._target = nil end
@@ -230,9 +233,6 @@ local bhk_mob_walker = {
 					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
 					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
 				end
-
-				bhk_mobs.walker.check_los(self, dtime)
-				bhk_mobs.walker.handle_animations(self, dtime)
 
 				if (not self._has_los) and (meta.state_time > 1) then
 					return MFSM.set_state(self, "chase", true, true)
