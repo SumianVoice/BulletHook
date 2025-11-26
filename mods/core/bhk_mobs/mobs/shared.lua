@@ -96,8 +96,8 @@ function bhk_mobs.walker.check_fire_gun(self, dtime)
 end
 
 ---@param self bhk_walker_base
-function bhk_mobs.walker.check_los(self, dtime)
-	if self._int_los:on_timer(dtime) then
+function bhk_mobs.walker.check_los(self, dtime, force)
+	if force or self._int_los:on_timer(dtime) then
 		if self._target and bhk_mobs.has_los_to_target(self, self._target) then
 			self._has_los = true
 			self._time_since_los = 0

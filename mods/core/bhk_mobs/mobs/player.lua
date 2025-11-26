@@ -61,6 +61,16 @@ local fplayer = {
 	---@param moveresult table|nil
 	---@return any
 	on_step = function(self, dtime, moveresult)
+		if self._target and not self._target.object:get_pos() then
+			self._target = nil
+		end
+
+		if self._target then
+			bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#f00", 0.2)
+		else
+			bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#00f", 0.2)
+		end
+
 		if not core.is_player(self._parent) then
 			return self.object:remove()
 		end
@@ -73,15 +83,19 @@ local fplayer = {
 		end
 		self._gun:_on_step(dtime)
 
-		if self._target and not self._target.object:get_pos() then
-			self._target = nil
+		if self._int_target:on_timer(dtime) then
+			bhk_mobs.get_target(self, nil)
+			if self._target then
+				bhk_mobs.walker.check_los(self, dtime, true)
+			end
 		end
 
-		if self._int_target:on_timer(dtime) then
+		if not self._has_los then
 			bhk_mobs.get_target(self, nil)
 		end
 
 		bhk_mobs.walker.check_los(self, dtime)
+
 		bhk_mobs.walker.handle_animations(self, dtime)
 		bhk_mobs.walker.rotate_to_movement(self, dtime)
 
@@ -90,9 +104,12 @@ local fplayer = {
 			bhk_mobs.walker.aim_at(self, dtime, tpos, 15)
 			bhk_main.debug_particle(self._aim_pos, "#f00", 0.2)
 			bhk_mobs.walker.check_fire_gun(self, dtime)
-		elseif self._look_pos then
-			bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
-			bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
+		else
+			self._target = nil
+			if self._look_pos then
+				bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+				bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
+			end
 		end
 
 		if self._turret_yaw and pi.fow_blocker then

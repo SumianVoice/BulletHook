@@ -57,6 +57,7 @@ dofile(mod_path .. "/scripts" .. "/OptionList.lua")
 dofile(mod_path .. "/scripts" .. "/creative.lua")
 dofile(mod_path .. "/scripts" .. "/inventory.lua")
 dofile(mod_path .. "/scripts" .. "/on_generate.lua")
+dofile(mod_path .. "/scripts" .. "/fow_observers.lua")
 
 dofile(mod_path .. "/nodes" .. "/nodes_system.lua")
 dofile(mod_path .. "/nodes" .. "/main_nodes.lua")

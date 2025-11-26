@@ -131,7 +131,7 @@ bhk_main.player_gun = exord_gunlike.GunDef.new({
             local e = o and o:get_luaentity()
             if not e then return end
             if e._on_damage then
-                e:_on_damage(6)
+                e:_on_damage(2)
                 do_hit_particles(pointed_thing.intersection_point, -vector.normalize(self.velocity))
             end
         end,
