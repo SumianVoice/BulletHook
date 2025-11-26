@@ -4,18 +4,16 @@ local ZERO = vector.new(0,0,0)
 
 bhk_mobs.pathfinding_options = bhk_mobpath.Options.new({
 	TRAVERSAL = function(p1, p2)
-		local nodes = core.find_nodes_in_area(
-			vector.offset(p2, -0, -1,-0),
-			vector.offset(p2,  0, -1, 0),
-			"group:full_solid"
-		)
-		if nodes and (#nodes < 1) then return false end
-		nodes = core.find_nodes_in_area(
-			vector.offset(p2, -0, 1,-0),
-			vector.offset(p2,  0, 1, 0),
-			"group:solid"
-		)
-		if nodes and (#nodes >= 1) then return false end
+		core.log("hit")
+		local p = vector.copy(p2)
+		p.y = p.y - 1
+		local n = core.get_node(p)
+		-- core.set_node(p, {name="air"})
+		if core.get_item_group(n.name, "full_solid") == 0 then return false end
+		p.y = p.y + 1
+		n = core.get_node(p)
+		-- core.set_node(p, {name="air"})
+		if core.get_item_group(n.name, "full_solid") > 0 then return false end
 		return true
 	end,
 	max_search = 300,
@@ -67,11 +65,14 @@ function bhk_mobs.check_get_path_dir(self, target_pos, force)
 	if allow_update then
 		self._last_target_pos = target_pos
 		self._path = bhk_mobpath.astar(
-			pos, target_pos,
+			vector.round(pos), vector.round(target_pos),
 			setmetatable({}, bhk_mobs.__options_meta)
 		)
+		if (#self._path <= 0) then
+			-- core.log("NO PATH")
+		end
 		for i, p in ipairs(self._path) do
-			bhk_main.debug_particle(p, "#f00", 1, UP*5, 2)
+			bhk_main.debug_particle(p, "#f00", 5, UP*5, 2)
 		end
 		self._path_cooldown = 2
 	end

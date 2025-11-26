@@ -17,7 +17,7 @@ core.register_entity("bhk_main:fow_blocker", {
 		self._cur = (self._cur + 1) % num
 		-- self._cur = (self._cur + 1) % 32
 		local yaw = -((self._cur) / num) * math.pi*2
-		local max_dist = 40
+		local max_dist = 80
 		local dir = core.yaw_to_dir(yaw)
 		local pos = self.object:get_pos()
 		pos.y = bhk_main.get_game_area_floor() + 2

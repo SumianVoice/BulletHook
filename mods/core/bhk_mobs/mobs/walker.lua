@@ -70,20 +70,60 @@ local bhk_mob_walker = {
 				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#555", 0.2)
 				if self._paused then return end
 
-				local dist = bhk_mobs.get_target_dist(self)
-				if not dist then self._target = nil end
+				if self._target and not self._target.object:get_pos() then
+					self._target = nil
+				end
 
 				if self._int_target:on_timer(dtime) then
 					bhk_mobs.get_target(self, nil)
-				end
-				if self._target then
-					return MFSM.set_state(self, "attack", true, true)
+					if self._target then return MFSM.set_state(self, "attack", true, true) end
 				end
 				if self._look_pos then
 					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
 				end
+
+				if (meta.state_time > 5) and not self._target then
+					return MFSM.set_state(self, "roam", true, true)
+				end
 			end,
 			on_start = function(self, meta)
+			end,
+			on_end = function(self, meta)
+			end,
+		},
+		{name = "roam",
+			---@param self bhk_mob_walker
+			on_step = function(self, dtime, meta)
+				bhk_main.debug_particle(vector.offset(self.object:get_pos(), 0, 3, 0), "#9f0", 0.2)
+				if self._paused then return end
+
+				if self._int_target:on_timer(dtime) then
+					bhk_mobs.get_target(self, nil)
+					if self._target then
+						return MFSM.set_state(self, "attack", true, true)
+					end
+				end
+				if self._look_pos then
+					bhk_mobs.walker.aim_at(self, dtime, self._look_pos, 100)
+					bhk_main.debug_particle(self._aim_pos, "#ff0", 0.2)
+				end
+
+				bhk_mobs.walker.move_toward(self, dtime, meta._move_target)
+
+				if (not self._path) or (#self._path <= 0) or meta.state_time > 10 then
+					return MFSM.set_state(self, "idle", true, true)
+				end
+			end,
+			on_start = function(self, meta)
+				meta._move_target = self.object:get_pos() + vector.new(
+					math.random(-20, 20), 0,
+					math.random(-20, 20)
+				)
+				self._look_pos = meta._move_target + vector.new(
+					math.random(-10, 10), 0,
+					math.random(-10, 10)
+				)
+				self._path = nil
 			end,
 			on_end = function(self, meta)
 			end,
@@ -189,7 +229,7 @@ local bhk_mob_walker = {
 
 		if self._aim_pos then
 			bhk_main.debug_particle(vector.offset(self._aim_pos, 0, 0, 0), "#f0f", 0.2)
-			bhk_main.debug_particle(vector.offset(self._aim_pos, 0, 5, 0), "#f0f", 0.2)
+			-- bhk_main.debug_particle(vector.offset(self._aim_pos, 0, 5, 0), "#f0f", 0.2)
 		end
 
 		if self._target then

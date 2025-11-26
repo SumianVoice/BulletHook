@@ -130,9 +130,25 @@ function bhk_mobs.walker.chase_target(self, dtime)
 			path_pos = fpos + (dir * self._move_speed)
 		end
 		local step_pos = bhk_mobs.vector_move_toward(fpos, path_pos, dtime * self._move_speed)
+		step_pos.y = fpos.y
 		self.object:move_to(step_pos)
 		bhk_mobs.walker.rotate_to_movement(self, dtime)
 	end
+end
+
+---@param self bhk_walker_base
+function bhk_mobs.walker.move_toward(self, dtime, pos)
+	local dir = bhk_mobs.check_get_path_dir(self, pos, false)
+	if not dir then return end
+	local fpos = self.object:get_pos()
+	local path_pos = self._path and self._path[#self._path]
+	if not path_pos then
+		path_pos = fpos + (dir * self._move_speed)
+	end
+	local step_pos = bhk_mobs.vector_move_toward(fpos, path_pos, dtime * self._move_speed)
+	step_pos.y = fpos.y
+	self.object:move_to(step_pos)
+	bhk_mobs.walker.rotate_to_movement(self, dtime)
 end
 
 ---@param self bhk_walker_base
