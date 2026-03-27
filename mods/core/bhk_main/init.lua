@@ -1,0 +1,111 @@
+local mod_name = core.get_current_modname()
+local mod_path = core.get_modpath(mod_name)
+local S = core.get_translator(mod_name)
+
+bhk_main = {
+    fullbright = false, --debug
+    generator = "main",
+	mg_name = nil,
+    dev_mode = false,
+    nodes_pointable = true,
+	generators = {},
+	game_pause = true,
+	sound_gain_multiplier = 4,
+	flags = {
+		doors_block_light = false,
+	},
+}
+
+bhk_main.gamearea_min = vector.new(-48, 1008, -48)
+bhk_main.gamearea_max = vector.new( 48, 1087,  48)
+
+bhk_main._pl = {}
+function bhk_main.pi(player)
+	if not core.is_player(player) then return end
+	local pi = bhk_main._pl[player]
+	if not pi then
+		pi = {
+			tasks = {},
+		}
+		bhk_main._pl[player] = pi
+	end
+	return pi
+end
+
+bhk_main.mg_name = core.get_mapgen_setting("mg_name") or "singlenode"
+bhk_main.dev_mode = (bhk_main.mg_name == "flat") or core.is_creative_enabled()
+
+function bhk_main.debug_particle(pos, color, time, vel, size)
+    do return end -- for debug purposes
+    core.add_particle({
+        size = size or 2,
+        pos = pos,
+        texture = "[fill:1x1:"..(color or "#fff"),
+        velocity = vel or vector.new(0, 0, 0),
+        expirationtime = time,
+        glow = 14,
+    })
+end
+
+dofile(mod_path .. "/scripts" .. "/helpers.lua")
+dofile(mod_path .. "/scripts" .. "/InTimer.lua")
+dofile(mod_path .. "/scripts" .. "/player_gun.lua")
+dofile(mod_path .. "/scripts" .. "/gamestate.lua")
+dofile(mod_path .. "/scripts" .. "/tasks.lua")
+dofile(mod_path .. "/scripts" .. "/fow_blocker.lua")
+dofile(mod_path .. "/scripts" .. "/OptionList.lua")
+dofile(mod_path .. "/scripts" .. "/creative.lua")
+dofile(mod_path .. "/scripts" .. "/inventory.lua")
+dofile(mod_path .. "/scripts" .. "/on_generate.lua")
+dofile(mod_path .. "/scripts" .. "/fow_observers.lua")
+
+dofile(mod_path .. "/nodes" .. "/nodes_system.lua")
+dofile(mod_path .. "/nodes" .. "/main_nodes.lua")
+dofile(mod_path .. "/nodes" .. "/decoration.lua")
+dofile(mod_path .. "/nodes" .. "/furniture.lua")
+dofile(mod_path .. "/nodes" .. "/lights.lua")
+dofile(mod_path .. "/nodes" .. "/doors.lua")
+
+local _t = 0
+core.register_globalstep(function(dtime)
+	_t = _t + dtime; if _t > 1 then _t = _t - 1 else return end
+	for i, player in ipairs(core.get_connected_players()) do
+		local pos1 = vector.offset(player:get_pos(), -10, -10, -10)
+		local pos2 = pos1 + vector.new(20, 20, 20)
+		core.fix_light(pos1, pos2)
+	end
+end)
+
+core.register_globalstep(function(dtime)
+    core.set_timeofday(0.5)
+end)
+
+core.register_on_joinplayer(function(player, last_login)
+	player:set_sky({
+		base_color = "#222",
+		type = "plain",
+		clouds = false,
+	})
+	if not bhk_main.dev_mode then
+		player:set_sky({
+			base_color = "#000",
+			type = "plain",
+			clouds = false,
+		})
+		-- player:set_fov(60, false, 0)
+		-- player:set_camera({
+		-- 	mode = "third",
+		-- })
+		-- player:set_eye_offset(
+		-- 	vector.new(0,0,0),
+		-- 	vector.new(0,15,-5),
+		-- 	vector.new(0,0,0)
+		-- )
+		-- player:set_properties({
+		-- 	collisionbox = {
+		-- 		-0.3, -7, -0.3,
+		-- 		0.3, -6, 0.3,
+		-- 	},
+		-- })
+	end
+end)
