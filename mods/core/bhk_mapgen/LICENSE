@@ -1,5 +1,5 @@
 
-Copyright (c) 2022 Sumi, SumianVoice <info[at]sumianvoice.com> <https://github.com/SumianVoice>
+Copyright (c) 2026 Sumi, SumianVoice <info[at]sumianvoice.com> <https://codeberg.org/SumianVoice>
 
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
@@ -30,44 +30,8 @@ SOFTWARE.
 ===
 Media Licenses
 ===
-Copyright (c) 2023 Sumi, SumianVoice <info[at]sumianvoice.com> <https://content.luanti.org/users/Sumianvoice/>
-License: CC-BY-4.0. <https://creativecommons.org/licenses/by/4.0/legalcode.txt>
+Copyright (c) 2025 Sumi, SumianVoice <info[at]sumianvoice.com> <https://content.luanti.org/users/Sumianvoice/>
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
 Files:
-bhk_inv_arrow.png
-bhk_inv_bg.png
-bhk_inv_bg_outline.png
-bhk_inv_btn.png
-bhk_inv_btn_press.png
-bhk_inv_hotbar_background.png
-bhk_inv_hotbar_select.png
-bhk_inv_itemslot_bg.png
-bhk_inv_panel_end.png
-bhk_inv_tagbg.png
-bhk_inv_tagbg_hover.png
-bhk_inv_tagbg_sel.png
-bhk_inv_tblocks.png
-bhk_inv_tdecor.png
-bhk_inv_tfood.png
-bhk_inv_tfurniture.png
-bhk_inv_tgoods.png
-bhk_inv_tmech.png
-bhk_inv_tmisc.png
-bhk_inv_trash.png
-bhk_inv_tshapes.png
-bhk_inv_ttools.png
-bhk_tcraft_bg.png
-bhk_tcraft_circle.png
-bhk_tcraft_panel.png
-bhk_tcraft_panel_middle.png
-bhk_tcraft_panel_overlay.png
-bhk_tcraft_panel_overlay_middle.png
-bhk_tcraft_panel_overlay_right.png
-bhk_tcraft_panel_right.png
-===
-Copyright (c) 2023 Sumi, SumianVoice <info[at]sumianvoice.com> <https://content.luanti.org/users/Sumianvoice/>
-License: Creative Commons 0 <https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt>
-Files:
-bhk_not_allowed.ogg
-bhk_page_turn.ogg
-bhk_pickup_item.ogg
+schematics/*.mts
 ===

@@ -1,0 +1,120 @@
+
+Copyright (c) 2026 Sumi, SumianVoice <info[at]sumianvoice.com> <https://codeberg.org/SumianVoice>
+
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted to the person(s) and/or legal entities listed
+in the above copyright notice.
+
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===
+Media Licenses
+===
+Copyright (c) 2023 Sumi, SumianVoice <info[at]sumianvoice.com> <https://content.luanti.org/users/Sumianvoice/>
+License: CC-BY-4.0. <https://creativecommons.org/licenses/by/4.0/legalcode.txt>
+Files:
+bhk_barrier.png
+bhk_ceiling_light_0.png
+bhk_ceiling_light_1.png
+bhk_door_0.png
+bhk_door_handle_0.png
+bhk_door_kick_0.png
+bhk_door_overlay_0.png
+bhk_emergency_light_0.png
+bhk_emergency_light_0_side.png
+bhk_main_placeholder_16x.png
+bhk_meta_blank.png
+bhk_meta_catwalk.png
+bhk_meta_overlay_carpet_1.png
+bhk_meta_overlay_dirt_0.png
+bhk_meta_white.png
+bhk_white.png
+exord_smoke_anim.png
+explosion_anim.png
+
+bhk_main_beep_lockon.ogg
+
+bhk_blinds_1x1_0.obj
+bhk_blinds_2x1_0.obj
+bhk_blinds_2x2_0.obj
+bhk_blinds_2x2_0_broken_0.obj
+bhk_blinds_2x2_0_broken_1.obj
+bhk_blinds_2x2_0_broken_2.obj
+bhk_chair_0.obj
+bhk_door_left_0.b3d
+bhk_door_left_1.b3d
+bhk_door_left_2.b3d
+bhk_door_left_3.b3d
+bhk_door_left_open_0.obj
+bhk_door_left_open_1.obj
+bhk_door_left_open_2.obj
+bhk_door_left_open_3.obj
+bhk_door_right_0.b3d
+bhk_door_right_1.b3d
+bhk_door_right_2.b3d
+bhk_door_right_3.b3d
+bhk_door_right_open_0.obj
+bhk_door_right_open_1.obj
+bhk_door_right_open_2.obj
+bhk_door_right_open_3.obj
+bhk_handrail_diagonal_left.obj
+bhk_handrail_diagonal_right.obj
+bhk_window_0.obj
+bhk_window_2x2_0.obj
+
+bhk_fow_cover.glb
+bhk_task_look.glb
+bhk_task_move.glb
+===
+michorvath, 2018 <https://freesound.org/people/michorvath/>
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
+Files:
+bhk_main_generic_bolt_throw.ogg
+===
+worthahep88, 2015 <https://freesound.org/people/worthahep88/sounds/319214/>
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
+Files:
+bhk_main_generic_impact.0.ogg
+bhk_main_generic_impact.1.ogg
+bhk_main_generic_impact.2.ogg
+bhk_main_generic_impact.3.ogg
+===
+Various CC0 Sounds From Freesound.org
+Format (* is wildcard): https://freesound.org/people/*
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
+Files:
+bhk_main_reload_click_in.ogg <dnewtonjr/sounds/157677/>
+bhk_main_generic_impact_close.ogg <u1769092/sounds/423301/>
+===
+qubodup, 2013 <https://freesound.org/people/qubodup/>
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
+Files:
+bhk_main_mk19_gl.ogg
+===
+SuperPhat, 2017 <https://freesound.org/people/SuperPhat/>
+License: Creative Commons 0 <http://creativecommons.org/publicdomain/zero/1.0/>
+Files:
+bhk_main_heavy_rifle.0.ogg
+bhk_main_heavy_rifle.1.ogg
+bhk_main_rifle_fire_2.ogg
+===
